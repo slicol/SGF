@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{64ECFF78-EE1F-432B-A581-A70E8EB6DE83}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SGF.Unity</RootNamespace>
+    <AssemblyName>SGFUnity</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Libs\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;ENABLE_LOG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Libs\</OutputPath>
+    <DefineConstants>TRACE;ENABLE_LOG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ILRuntime, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\ILRuntime.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Common\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="SGFDebuger, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\SGFDebuger.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Common\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Common\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="zxing.unity, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Common\zxing.unity.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DebugerGUI\NetDebugerGUI.cs" />
+    <Compile Include="DebugerGUI\SGFDebugerGUI.cs" />
+    <Compile Include="DebugerGUI\SGFDebugerGUIBase.cs" />
+    <Compile Include="Extension\TransformExtensions.cs" />
+    <Compile Include="ILR\DebugerILR\DebugerMethodRedirector.cs" />
+    <Compile Include="ILR\DebugerILR\ILogTagAdaptor.cs" />
+    <Compile Include="ILR\DelegateConvertor.cs" />
+    <Compile Include="ILR\ILRManager.cs" />
+    <Compile Include="ILR\ModuleILR\GeneralModuleAdaptor.cs" />
+    <Compile Include="ILR\ModuleILR\ILRModuleActivator.cs" />
+    <Compile Include="ILR\UIILR\ILRUILoading.cs" />
+    <Compile Include="ILR\UIILR\ILRUILoadingAdaptor.cs" />
+    <Compile Include="ILR\UIILR\ILRUIPageAdaptor.cs" />
+    <Compile Include="ILR\UIILR\ILRUIPage.cs" />
+    <Compile Include="ILR\UIILR\ILRUIPanel.cs" />
+    <Compile Include="ILR\UIILR\ILRUIPanelAdaptor.cs" />
+    <Compile Include="ILR\UIILR\ILRUIWidget.cs" />
+    <Compile Include="ILR\UIILR\ILRUIWidgetAdaptor.cs" />
+    <Compile Include="ILR\UIILR\ILRUIWindow.cs" />
+    <Compile Include="ILR\UIILR\ILRUIWindowAdaptor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\SGUI\Drawing.cs" />
+    <Compile Include="UI\SGUI\DrawingSimple.cs" />
+    <Compile Include="UI\SGUI\GUICurve.cs" />
+    <Compile Include="UI\UILib\Control\CtlList.cs" />
+    <Compile Include="UI\UILib\Control\CtlListItem.cs" />
+    <Compile Include="UI\UILib\Control\CtlProgressBar.cs" />
+    <Compile Include="UI\UILib\Control\UIControl.cs" />
+    <Compile Include="UI\UILib\UIMsgBox.cs" />
+    <Compile Include="UI\UILib\UIMsgTips.cs" />
+    <Compile Include="UI\UILib\UISimpleLoading.cs" />
+    <Compile Include="UI\UILoading.cs" />
+    <Compile Include="UI\UIPage.cs" />
+    <Compile Include="UI\UIWidget.cs" />
+    <Compile Include="UI\UIDefine.cs" />
+    <Compile Include="UI\UIEventTrigger.cs" />
+    <Compile Include="UI\UIManager.cs" />
+    <Compile Include="UI\UIPanel.cs" />
+    <Compile Include="UI\UIRes.cs" />
+    <Compile Include="UI\UIRoot.cs" />
+    <Compile Include="UI\UIUtils.cs" />
+    <Compile Include="UI\UIWindow.cs" />
+    <Compile Include="Utils\QRCodeUtils.cs" />
+    <Compile Include="Common\AppPrefs.cs" />
+    <Compile Include="Common\DelayInvoker.cs" />
+    <Compile Include="Utils\GameObjectUtils.cs" />
+    <Compile Include="Common\MonoHelper.cs" />
+    <Compile Include="Common\MonoSingleton.cs" />
+    <Compile Include="Utils\NetUtils.cs" />
+    <Compile Include="Extension\VectorExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SGFCore\SGFCore.csproj">
+      <Project>{eeb72dfc-0fa5-44de-b75a-586f69377aa6}</Project>
+      <Name>SGFCore</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>$(ProjectDir)..\Libs\PublishLibrary.bat $(TargetName)</PostBuildEvent>
+  </PropertyGroup>
+</Project>

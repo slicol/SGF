@@ -1,0 +1,654 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SGFCore</name>
+    </assembly>
+    <members>
+        <member name="T:SGF.Codec.PBSerializer">
+            <summary>
+            序列化帮助类
+            </summary>
+        </member>
+        <member name="M:SGF.Codec.PBSerializer.NSerialize``1(``0)">
+            <summary>
+            序列化pb数据
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="t"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SGF.Codec.PBSerializer.NDeserialize``1(System.Byte[])">
+            <summary>
+            反序列化pb数据
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SGF.Event.SGFEventTable`1.GetEvent(System.String)">
+            <summary>
+            获取Type所指定的ModuleEvent（它其实是一个EventTable）
+            如果不存在，则实例化一个
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SGF.Math.SGFRandom.Rnd">
+            <summary>
+            采用线性同余算法产生一个0~1之间的随机小数
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SGF.Module.BusinessModule.Event(System.String)">
+            <summary>
+            实现抽象事件功能
+            可以像这样使用：obj.Event("onLogin").AddListener(...)        
+            事件的发送方法：this.Event("onLogin").Invoke(args)
+            而不需要在编码时先定义好，以提高模块的抽象程度
+            但是在模块内部的类不应该过于抽象，比如数据发生更新了，
+            在UI类这样使用：obj.onUpdate.AddListener(...)
+            这两种方法在使用形式上，保持了一致性！
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SGF.Module.BusinessModule.Create(System.Object)">
+            <summary>
+            调用它以创建模块
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:SGF.Module.BusinessModule.Release">
+            <summary>
+            调用它以释放模块
+            </summary>
+        </member>
+        <member name="M:SGF.Module.BusinessModule.HandleMessage(System.String,System.Object[])">
+            <summary>
+            当模块收到消息后，对消息进行一些处理
+            </summary>
+            <param name="msg"></param>
+            <param name="args"></param>
+        </member>
+        <member name="M:SGF.Module.BusinessModule.OnModuleMessage(System.String,System.Object[])">
+            <summary>
+            由派生类去实现，用于处理消息
+            </summary>
+            <param name="msg"></param>
+            <param name="args"></param>
+        </member>
+        <member name="M:SGF.Module.BusinessModule.Show(System.Object)">
+            <summary>
+            显示业务模块的主UI
+            一般业务模块都有UI，这是游戏业务模块的特点
+            </summary>
+        </member>
+        <member name="M:SGF.Module.LuaModule.#ctor(System.String)">
+            <summary>
+            构造函数传入Name
+            是因为Lua模块无法通过反射来获取Name
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:SGF.Module.LuaModule.Create(System.Object)">
+            <summary>
+            这里应该去加载Lua脚本
+            并且将EventManager映射到Lua脚本中
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:SGF.Module.LuaModule.Release">
+            <summary>
+            调用它以卸载Lua脚本
+            </summary>
+        </member>
+        <member name="M:SGF.Module.ModuleBase.Release">
+            <summary>
+            调用它以释放模块
+            </summary>
+        </member>
+        <member name="F:SGF.Module.ModuleManager.m_mapModules">
+            <summary>
+            已创建的模块列表
+            </summary>
+        </member>
+        <member name="F:SGF.Module.ModuleManager.m_mapCacheMessage">
+            <summary>
+            当目标模块未创建时，缓存的消息对象
+            </summary>
+        </member>
+        <member name="F:SGF.Module.ModuleManager.m_mapPreListenEvents">
+            <summary>
+            当目标模块未创建时，预监听的事件
+            </summary>
+        </member>
+        <member name="F:SGF.Module.ModuleManager.m_domain">
+            <summary>
+            用于模块反射的域
+            </summary>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.Init(System.String)">
+            <summary>
+            初始化
+            </summary>
+            <param name="domain">业务模块所在的域</param>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.CreateModule``1(System.Object)">
+            <summary>
+            通过类型创建一个业务模块
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.CreateModule(System.String,System.Object)">
+            <summary>
+            通过名字创建一个业务模块
+            先通过名字反射出Class，如果不存在
+            则通过扫描Lua文件目录加载LuaModule
+            </summary>
+            <param name="name">业务模块的名字</param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.ReleaseModule(SGF.Module.BusinessModule)">
+            <summary>
+            释放一个由ModuleManager创建的模块
+            遵守谁创建谁释放的原则
+            </summary>
+            <param name="module"></param>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.ReleaseAll">
+            <summary>
+            释放所有模块
+            </summary>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.GetModule(System.String)">
+            <summary>
+            通过名字获取一个Module
+            如果未创建过该Module，则返回null
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.ShowModule(System.String,System.Object)">
+            <summary>
+            显示业务模块的默认UI
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.SendMessage(System.String,System.String,System.Object[])">
+            <summary>
+            向指定的模块发送消息
+            </summary>
+            <param name="target"></param>
+            <param name="msg"></param>
+            <param name="args"></param>
+        </member>
+        <member name="M:SGF.Module.ModuleManager.Event(System.String,System.String)">
+            <summary>
+            监听指定模块的指定事件
+            </summary>
+            <param name="target"></param>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="P:SGF.Module.ServiceModule`1.Instance">
+            <summary>
+            用于实现单例
+            </summary>
+        </member>
+        <member name="M:SGF.Module.ServiceModule`1.CheckSingleton">
+            <summary>
+            调用它以创建模块
+            并且检查它是否以单例形式创建
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="F:SGF.Network.NetBuffer.m_16b">
+            <summary>
+            临时字节长度
+            </summary>
+        </member>
+        <member name="M:SGF.Network.NetBuffer.Arrangement(System.Int32)">
+            <summary>
+            去掉已经读完的字节
+            装POSITION设置成0
+            </summary>
+        </member>
+        <member name="M:SGF.Network.NetBuffer.UpdateLenAndGetWritePos(System.Int32,System.Int32)">
+            <summary>
+            将位置设置到最大
+            </summary>
+        </member>
+        <member name="M:SGF.Network.NetBuffer.AddBytes(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            将Byte[]写入Buffer的末尾
+            不移动游标，返回长度
+            </summary>
+        </member>
+        <member name="M:SGF.Network.NetBuffer.CopyWith(SGF.Network.NetBuffer,System.Int32,System.Boolean)">
+            <summary>
+            把src对象的数组copy到本对象，从dstOffect的地方开始
+            不移动游标，返回长度
+            </summary>
+        </member>
+        <member name="M:SGF.Network.NetBuffer.CopyWith(SGF.Network.NetBuffer,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            把src对象的数组从srcOffset开始copy到本对象从dstOffect的地方开始
+            不移动游标，返回长度
+            </summary>
+        </member>
+        <member name="M:SGF.Network.NetBuffer.AddLength(System.Int32,System.Int32)">
+            <summary>
+            从指定Pos增加指定Len
+            </summary>
+        </member>
+        <member name="M:SGF.Network.NetBuffer.ReadBytes(System.Byte[],System.Int32,System.Int32)">
+            读取数据
+             
+        </member>
+        <member name="T:SGF.Network.NetBufferReader">
+            <summary>
+            字节读出
+            </summary>
+        </member>
+        <member name="T:SGF.Network.NetBufferWriter">
+            <summary>
+            字节写入...
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Client.FSPManager.SetFrameListener(System.Action{System.Int32,SGF.Network.FSPLite.FSPFrame})">
+            <summary>
+            设置帧数据的监听
+            </summary>
+            <param name="listener"></param>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Client.FSPManager.OnFSPListener(SGF.Network.FSPLite.FSPFrame)">
+            <summary>
+            监听来自FSPClient的帧数据
+            </summary>
+            <param name="frame"></param>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Client.FSPManager.EnterFrame">
+            <summary>
+            由外界驱动
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Client.FSPManager.ExecuteFrame(System.Int32,SGF.Network.FSPLite.FSPFrame)">
+            <summary>
+            执行每一帧
+            </summary>
+            <param name="frameId"></param>
+            <param name="frame"></param>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Client.FSPManager.SendFSP(System.Int32,System.Int32)">
+            <summary>
+            给外界用来发送FSPVkey的
+            </summary>
+            <param name="vkey"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Client.FSPManager.SendFSPLocal(System.Int32,System.Int32)">
+            <summary>
+            用于本地兼容，比如打PVE的时候，也可以用帧同步兼容
+            </summary>
+            <param name="vkey"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPGameState.None">
+            <summary>
+            0 初始状态
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPGameState.Create">
+            <summary>
+            游戏创建状态
+            只有在该状态下，才允许加入玩家
+            当所有玩家都发VKey.GameBegin后，进入下一个状态
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPGameState.GameBegin">
+            <summary>
+            游戏开始状态
+            在该状态下，等待所有玩家发VKey.RoundBegin，或者 判断玩家是否掉线
+            当所有人都发送VKey.RoundBegin，进入下一个状态
+            当有玩家掉线，则从FSPGame中删除该玩家：
+                判断如果只剩下1个玩家了，则直接进入GameEnd状态，否则不影响游戏状态
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPGameState.RoundBegin">
+            <summary>
+            回合开始状态
+            （这个时候客户端可能在加载资源）
+            在该状态下，等待所有玩家发VKey.ControlStart， 或者 判断玩家是否掉线
+            当所有人都发送VKey.ControlStart，进入下一个状态
+            当有玩家掉线，则从FSPGame中删除该玩家：
+                判断如果只剩下1个玩家了，则直接进入GameEnd状态，否则不影响游戏状态
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPGameState.ControlStart">
+            <summary>
+            可以开始操作状态
+            （因为每个回合可能都会有加载过程，不同的玩家加载速度可能不同，需要用一个状态统一一下）
+            在该状态下，接收玩家的业务VKey， 或者 VKey.RoundEnd，或者VKey.GameExit
+            当所有人都发送VKey.RoundEnd，进入下一个状态
+            当有玩家掉线，或者发送VKey.GameExit，则从FSPGame中删除该玩家：
+                判断如果只剩下1个玩家了，则直接进入GameEnd状态，否则不影响游戏状态
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPGameState.RoundEnd">
+            <summary>
+            回合结束状态
+            （大部分游戏只有1个回合，也有些游戏有多个回合，由客户端逻辑决定）
+            在该状态下，等待玩家发送VKey.GameEnd，或者 VKey.RoundBegin（如果游戏不只1个回合的话）
+            当所有人都发送VKey.GameEnd，或者 VKey.RoundBegin时，进入下一个状态
+            当有玩家掉线，则从FSPGame中删除该玩家：
+                判断如果只剩下1个玩家了，则直接进入GameEnd状态，否则不影响游戏状态
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPGameState.GameEnd">
+            <summary>
+            游戏结束状态
+            在该状态下，不再接收任何Vkey，然后给所有玩家发VKey.GameEnd，并且等待FSPServer关闭
+            </summary>
+        </member>
+        <member name="T:SGF.Network.FSPLite.FSPVKey">
+            <summary>
+            为了兼容键盘和轮盘操作，将玩家的操作抽象为【虚拟按键+参数】的【命令】形式：VKey+Arg
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKey.vkey">
+            <summary>
+            键值
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKey.args">
+            <summary>
+            参数列表
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKey.playerIdOrClientFrameId">
+            <summary>
+            S2C  服务器下发PlayerId
+            C2S  客户端上报ClientFrameId
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.GAME_BEGIN">
+            <summary>
+            PVP战斗结束
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.ROUND_BEGIN">
+            <summary>
+            对局开始
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.LOAD_START">
+            <summary>
+            开始加载
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.LOAD_PROGRESS">
+            <summary>
+            加载进度条
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.CONTROL_START">
+            <summary>
+            可以开始控制...
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.GAME_EXIT">
+            <summary>
+            发送中途退出
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.ROUND_END">
+            <summary>
+            对局结束
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.GAME_END">
+            <summary>
+            PVP战斗结束
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.AUTH">
+            <summary>
+            UDP身份字段
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.FSPVKeyBase.PING">
+            <summary>
+            PING 响应回包...
+            </summary>
+        </member>
+        <member name="F:SGF.Network.FSPLite.Server.FSPGame.MaxPlayerNum">
+            <summary>
+            最大支持的玩家数：31
+            因为用来保存玩家Flag的Int只有31位有效位可用，不过31已经足够了
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPGame.HandleClientCmd(SGF.Network.FSPLite.Server.FSPPlayer,SGF.Network.FSPLite.FSPVKey)">
+            <summary>
+            处理来自客户端的 Cmd
+            对其中的关键VKey进行处理
+            并且收集业务VKey
+            </summary>
+            <param name="player"></param>
+            <param name="cmd"></param>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPGame.EnterFrame">
+            <summary>
+            驱动游戏状态
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPGame.CheckGameAbnormalEnd">
+            <summary>
+            检测游戏是否异常结束
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPGame.OnState_Create">
+            <summary>
+            游戏创建状态
+            只有在该状态下，才允许加入玩家
+            当所有玩家都发VKey.GameBegin后，进入下一个状态
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPGame.OnState_GameBegin">
+            <summary>
+            游戏开始状态
+            在该状态下，等待所有玩家发VKey.RoundBegin，或者 判断玩家是否掉线
+            当所有人都发送VKey.RoundBegin，进入下一个状态
+            当有玩家掉线，则从FSPGame中删除该玩家：
+                判断如果只剩下1个玩家了，则直接进入GameEnd状态，否则不影响游戏状态
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPGame.OnState_RoundBegin">
+            <summary>
+            回合开始状态
+            （这个时候客户端可能在加载资源）
+            在该状态下，等待所有玩家发VKey.ControlStart， 或者 判断玩家是否掉线
+            当所有人都发送VKey.ControlStart，进入下一个状态
+            当有玩家掉线，则从FSPGame中删除该玩家：
+                判断如果只剩下1个玩家了，则直接进入GameEnd状态，否则不影响游戏状态
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPGame.OnState_ControlStart">
+            <summary>
+            可以开始操作状态
+            （因为每个回合可能都会有加载过程，不同的玩家加载速度可能不同，需要用一个状态统一一下）
+            在该状态下，接收玩家的业务VKey， 或者 VKey.RoundEnd，或者VKey.GameExit
+            当所有人都发送VKey.RoundEnd，进入下一个状态
+            当有玩家掉线，或者发送VKey.GameExit，则从FSPGame中删除该玩家：
+                判断如果只剩下1个玩家了，则直接进入GameEnd状态，否则不影响游戏状态
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPGame.OnState_RoundEnd">
+            <summary>
+            回合结束状态
+            （大部分游戏只有1个回合，也有些游戏有多个回合，由客户端逻辑决定）
+            在该状态下，等待玩家发送VKey.GameEnd，或者 VKey.RoundBegin（如果游戏不只1个回合的话）
+            当所有人都发送VKey.GameEnd，或者 VKey.RoundBegin时，进入下一个状态
+            当有玩家掉线，则从FSPGame中删除该玩家：
+                判断如果只剩下1个玩家了，则直接进入GameEnd状态，否则不影响游戏状态
+            </summary>
+        </member>
+        <member name="M:SGF.Network.FSPLite.Server.FSPPlayer.IsLose">
+            <summary>
+            判断是否掉线
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="F:SGF.Network.FSPLite.Server.FSPServer.FRAME_TICK_INTERVAL">
+            <summary>
+            帧间隔...
+            </summary>
+        </member>
+        <member name="M:SGF.Utils.TimeUtils.GetTimeStringV2(System.String,System.Int64)">
+            <summary>
+            如果不显示天, 显示hh就会显示所有小时, 但是又怕有地方需要这样, 因此这里新开一下
+            </summary>
+            <param name="format"></param>
+            <param name="seconds"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MiniJSON.Json">
+             <summary>
+             This class encodes and decodes JSON strings.
+             Spec. details, see http://www.json.org/
+            
+             JSON uses Arrays and Objects. These correspond here to the datatypes IList and IDictionary.
+             All numbers are parsed to doubles.
+             </summary>
+        </member>
+        <member name="M:MiniJSON.Json.Deserialize(System.String)">
+            <summary>
+            Parses the string json into a value
+            </summary>
+            <param name="json">A JSON string.</param>
+            <returns>An List&lt;object&gt;, a Dictionary&lt;string, object&gt;, a double, an integer,a string, null, true, or false</returns>
+        </member>
+        <member name="M:MiniJSON.Json.Serialize(System.Object)">
+            <summary>
+            Converts a IDictionary / IList object or a simple type (string, int, etc.) into a JSON string
+            </summary>
+            <param name="json">A Dictionary&lt;string, object&gt; / List&lt;object&gt;</param>
+            <returns>A JSON encoded string, or null if object 'json' is not serializable</returns>
+        </member>
+        <member name="M:CollectionExtensions.FilterByType``2(System.Collections.Generic.IEnumerable{``0})">
+                    Returns all elements of the source which are of FilterType.
+        </member>
+        <member name="M:CollectionExtensions.RemoveAllBut``1(System.Collections.Generic.List{``0},System.Predicate{``0})">
+            <summary>
+            移除不符合条件的元素
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="source"></param>
+            <param name="match"></param>
+        </member>
+        <member name="M:CollectionExtensions.IsEmpty``1(System.Collections.Generic.ICollection{``0})">
+            <summary>
+            返回容器是否为空
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="collection"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CollectionExtensions.AddRange``1(System.Collections.Generic.ICollection{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            批量追加元素
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="collection"></param>
+            <param name="other"></param>
+        </member>
+        <member name="M:CollectionExtensions.ListToString``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            将容器序列化成字符串
+            格式：{a, b, c}
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CollectionExtensions.ListToString(System.Object)">
+            <summary>
+            将容器序列化成字符串
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CollectionExtensions.ButFirst``1(System.Collections.Generic.IEnumerable{``0})">
+                    Returns an enumerable of all elements of the given list	but the first,
+                    keeping them in order.
+        </member>
+        <member name="M:CollectionExtensions.ButLast``1(System.Collections.Generic.IEnumerable{``0})">
+                    Returns an enumarable of all elements in the given 
+                    list but the last, keeping them in order.
+        </member>
+        <member name="M:CollectionExtensions.MaxBy``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.IComparable})">
+            <summary>
+            根据给定的方法，求出容器中最大的元素
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="source"></param>
+            <param name="score"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CollectionExtensions.MinBy``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
+                    Finds the maximum element in the source as scored by the given function.
+        </member>
+        <member name="M:CollectionExtensions.RotateLeft``1(System.Collections.Generic.IEnumerable{``0})">
+                    Returns a enumerable with elements in order, but the first element is moved to the end.
+        </member>
+        <member name="M:CollectionExtensions.RotateRight``1(System.Collections.Generic.IEnumerable{``0})">
+                    Returns a enumerable with elements in order, but the last element is moved to the front.
+        </member>
+        <member name="M:CollectionExtensions.RandomItem``1(System.Collections.Generic.IEnumerable{``0})">
+                    Returns a random element from the list.
+        </member>
+        <member name="M:CollectionExtensions.SampleRandom``1(System.Collections.Generic.IEnumerable{``0},System.Int32)">
+                    Returns a random sample from the list.
+        </member>
+        <member name="M:CollectionExtensions.Shuffle``1(System.Collections.Generic.IList{``0})">
+            <summary>
+            乱序
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="source"></param>
+        </member>
+        <member name="M:CollectionExtensions.BinarySearch``2(System.Collections.Generic.ICollection{``0},``1,System.Func{``0,``1})">
+                    Find an element in a collection by binary searching. 
+                    This requires the collection to be sorted on the values returned by getSubElement
+                    This will compare some derived property of the elements in the collection, rather than the elements
+                    themselves.
+        </member>
+        <member name="M:CollectionExtensions.BinarySearch``2(System.Collections.Generic.ICollection{``0},``1,System.Func{``0,``1},System.Collections.Generic.IComparer{``1})">
+                    Find an element in a collection by binary searching. 
+                    This requires the collection to be sorted on the values returned by getSubElement
+                    This will compare some derived property of the elements in the collection, rather than the elements
+                    themselves.
+        </member>
+        <member name="M:CollectionExtensions.BinarySearch``2(System.Collections.Generic.ICollection{``0},``1,System.Func{``0,``1},System.Int32,System.Int32)">
+                    Find an element in a collection by binary searching. 
+                    This requires the collection to be sorted on the values returned by getSubElement
+                    This will compare some derived property of the elements in the collection, rather than the elements
+                    themselves.
+        </member>
+        <member name="M:CollectionExtensions.BinarySearch``2(System.Collections.Generic.ICollection{``0},``1,System.Func{``0,``1},System.Int32,System.Int32,System.Collections.Generic.IComparer{``1})">
+                    Find an element in a collection by binary searching. 
+                    This requires the collection to be sorted on the values returned by getSubElement
+                    This will compare some derived property of the elements in the collection, rather than the elements
+                    themselves.
+        </member>
+        <member name="M:ObjectExtensions.ThrowIfNull(System.Object,System.String)">
+            <summary>
+            对象如果为Null，抛出异常
+            </summary>
+            <param name="o"></param>
+            <param name="message">异常消息</param>
+        </member>
+    </members>
+</doc>

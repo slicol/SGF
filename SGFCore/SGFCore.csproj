@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EEB72DFC-0FA5-44DE-B75A-586F69377AA6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>SGF</RootNamespace>
+    <AssemblyName>SGFCore</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Libs\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;ENABLE_LOG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>0</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>
+    </DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Libs\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>0</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>
+    </DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Common\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="SGFDebuger, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\SGFDebuger.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Codec\SGFEncoding.cs" />
+    <Compile Include="Codec\MiniJSON.cs" />
+    <Compile Include="Codec\PBSerializer.cs" />
+    <Compile Include="Common\MapList.cs" />
+    <Compile Include="Common\Singleton.cs" />
+    <Compile Include="Console\ConsoleInput.cs" />
+    <Compile Include="Event\SGFEvent.cs" />
+    <Compile Include="Extension\CollectionExtensions.cs" />
+    <Compile Include="Common\DictionarySafe.cs" />
+    <Compile Include="Extension\ObjectExtensions.cs" />
+    <Compile Include="IPCWork\IPCConfig.cs" />
+    <Compile Include="IPCWork\IPCManager.cs" />
+    <Compile Include="IPCWork\IPCMessage.cs" />
+    <Compile Include="Math\SGFRandom.cs" />
+    <Compile Include="Module\GeneralModule.cs" />
+    <Compile Include="Module\IModuleActivator.cs" />
+    <Compile Include="Module\ModuleBase.cs" />
+    <Compile Include="Module\ModuleManager.cs" />
+    <Compile Include="Module\NativeModuleActivator.cs" />
+    <Compile Include="Network\Core\KCP\kcp.cs" />
+    <Compile Include="Network\Core\KCP\KCPSocket.cs" />
+    <Compile Include="Network\Core\KCP\switch_queue.cs" />
+    <Compile Include="Network\Core\NetBuffer.cs" />
+    <Compile Include="Network\Core\NetErrorCode.cs" />
+    <Compile Include="Network\Core\NetMessage.cs" />
+    <Compile Include="Network\Core\ProtocolHead.cs" />
+    <Compile Include="Network\Core\RPCLite\RPCManagerBase.cs" />
+    <Compile Include="Network\Core\RPCLite\RPCMessage.cs" />
+    <Compile Include="Network\Core\UdpSocket.cs" />
+    <Compile Include="Network\Debuger\NetDebuger.cs" />
+    <Compile Include="Network\Debuger\NetDebugFile.cs" />
+    <Compile Include="Network\Debuger\net_debuger.cs" />
+    <Compile Include="Network\FSPLite\Client\FSPClient.cs" />
+    <Compile Include="Network\FSPLite\Client\FSPFrameController.cs" />
+    <Compile Include="Network\FSPLite\Client\FSPManager.cs" />
+    <Compile Include="Network\FSPLite\FSPBasicCmd.cs" />
+    <Compile Include="Network\FSPLite\FSPGameEndReason.cs" />
+    <Compile Include="Network\FSPLite\FSPGameState.cs" />
+    <Compile Include="Network\FSPLite\FSPLiteData.cs" />
+    <Compile Include="Network\FSPLite\Server\FSPGame.cs" />
+    <Compile Include="Network\FSPLite\Server\FSPGateway.cs" />
+    <Compile Include="Network\FSPLite\Server\FSPManager.cs" />
+    <Compile Include="Network\FSPLite\Server\FSPPlayer.cs" />
+    <Compile Include="Network\FSPLite\Server\FSPSession.cs" />
+    <Compile Include="Network\General\Client\IConnection.cs" />
+    <Compile Include="Network\General\Client\KCPConnection.cs" />
+    <Compile Include="Network\General\Client\NetManager.cs" />
+    <Compile Include="Network\General\Server\Gateway.cs" />
+    <Compile Include="Network\General\Server\ISession.cs" />
+    <Compile Include="Network\General\Server\KCPSession.cs" />
+    <Compile Include="Network\General\Server\NetManager.cs" />
+    <Compile Include="Network\Utils\DnsUtils.cs" />
+    <Compile Include="Network\Utils\IPUtils.cs" />
+    <Compile Include="Network\Utils\NetUtils.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\MainLoop.cs" />
+    <Compile Include="Server\ServerConfig.cs" />
+    <Compile Include="Server\ServerManager.cs" />
+    <Compile Include="Server\ServerModule.cs" />
+    <Compile Include="Time\SGFTime.cs" />
+    <Compile Include="Utils\FileUtils.cs" />
+    <Compile Include="Utils\PathUtils.cs" />
+    <Compile Include="Utils\TimeUtils.cs" />
+    <Compile Include="Utils\URLUtils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Network\Core\KCP\LICENSE.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>$(ProjectDir)..\Libs\PublishLibrary.bat $(TargetName)</PostBuildEvent>
+  </PropertyGroup>
+</Project>
