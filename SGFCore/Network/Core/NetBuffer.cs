@@ -216,7 +216,7 @@ namespace SGF.Network.Core
                 }
 
                 writePos = m_len;
-                m_len += writeLen;
+                m_len = writePos + writeLen;
             }
             else
             {
@@ -227,7 +227,7 @@ namespace SGF.Network.Core
 
                 if (writePos + writeLen > m_len)
                 {
-                    m_len += writeLen;
+                    m_len = writePos + writeLen;
                 }
             }
 
