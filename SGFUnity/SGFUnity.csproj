@@ -70,6 +70,7 @@
     <Compile Include="DebugerGUI\NetDebugerGUI.cs" />
     <Compile Include="DebugerGUI\SGFDebugerGUI.cs" />
     <Compile Include="DebugerGUI\SGFDebugerGUIBase.cs" />
+    <Compile Include="Extension\BitmapDrawingExtensions.cs" />
     <Compile Include="Extension\TransformExtensions.cs" />
     <Compile Include="ILR\DebugerILR\DebugerMethodRedirector.cs" />
     <Compile Include="ILR\DebugerILR\ILogTagAdaptor.cs" />
