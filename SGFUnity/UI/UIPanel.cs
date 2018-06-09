@@ -175,7 +175,7 @@ namespace SGF.Unity.UI
         /// <typeparam name="T"></typeparam>
         /// <param name="controlName"></param>
         /// <returns></returns>
-        public T Find<T>(string controlName) where T : UIBehaviour
+        public T Find<T>(string controlName) where T : MonoBehaviour
         {
             Transform target = this.transform.Find(controlName);
             if (target != null)

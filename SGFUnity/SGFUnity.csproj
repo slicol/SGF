@@ -89,6 +89,8 @@
     <Compile Include="ILR\UIILR\ILRUIWindow.cs" />
     <Compile Include="ILR\UIILR\ILRUIWindowAdaptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\Drag\Draggable.cs" />
+    <Compile Include="UI\Drag\DropZone.cs" />
     <Compile Include="UI\SGUI\Drawing.cs" />
     <Compile Include="UI\SGUI\DrawingSimple.cs" />
     <Compile Include="UI\SGUI\GUICurve.cs" />
