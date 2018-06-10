@@ -6,8 +6,6 @@ namespace SGF.Unity.UI.UILib
 {
     public class UISimpleLoading:UILoading
     {
-        public Text txtTitle;
-        public Text txtTips;
         public CtlProgressBar progressBar;
         public Image rotateIcon;
 
