@@ -35,6 +35,11 @@ namespace ProtoTurtle.BitmapDrawing
     /// </remarks>
     public static class BitmapDrawingExtensions
     {
+        public static void Clear(this Texture2D texture)
+        {
+            Rect rect = new Rect(0, 0, texture.width, texture.height);
+            texture.DrawFilledRectangle(rect, Color.clear);
+        }
 
 
         /// <summary>
@@ -408,6 +413,8 @@ namespace ProtoTurtle.BitmapDrawing
             return height - (int)y;
         }
 
+
+        
     }
 
 
