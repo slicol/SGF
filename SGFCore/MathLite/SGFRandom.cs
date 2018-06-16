@@ -1,5 +1,5 @@
 ﻿
-namespace SGF.Math
+namespace SGF.MathLite
 {
     public class SGFRandom
     {

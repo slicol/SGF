@@ -26,7 +26,7 @@
 */
 using System;
 using System.Collections.Generic;
-using SGF.Math;
+using SGF.MathLite;
 using SGF.Network.protocol;
 
 
