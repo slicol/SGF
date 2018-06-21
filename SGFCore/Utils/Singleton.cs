@@ -26,7 +26,7 @@
 */
 
 
-namespace SGF.Common
+namespace SGF.Utils
 {
     public abstract class Singleton<T> where T : Singleton<T>, new()
     {

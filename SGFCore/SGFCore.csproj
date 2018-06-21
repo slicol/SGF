@@ -64,7 +64,7 @@
     <Compile Include="Codec\MiniJSON.cs" />
     <Compile Include="Codec\PBSerializer.cs" />
     <Compile Include="Common\MapList.cs" />
-    <Compile Include="Common\Singleton.cs" />
+    <Compile Include="Utils\Singleton.cs" />
     <Compile Include="Console\ConsoleInput.cs" />
     <Compile Include="Event\SGFEvent.cs" />
     <Compile Include="Extension\CollectionExtensions.cs" />
