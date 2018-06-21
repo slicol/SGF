@@ -1,5 +1,5 @@
 # SGF 
-the Simple Game Foundation
+the Smart Game Foundation
 
 它主要由3个工程组成：
 
