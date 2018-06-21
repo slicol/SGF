@@ -16,6 +16,11 @@ the Simple Game Foundation
 * Libs：以上工程编译好的Dll，如果不需要修改代码的话，你可以直接使用这些Dll。
 * Apps：以上示例编译好的Exe，你可以尝试运行一下，可能在不同的机器上运行会有问题，你最好直接打开对应的示例工程来调试运行。
 
+其它：
+* SGF库发源于我的一个GAD课程项目：《贪吃蛇大作战》
+* 其相关的视频链接为：
+    * 第一季： http://gameinstitute.qq.com/lore/index/10007
+    * 第二季： http://gameinstitute.qq.com/lore/index/10017
 
 ## 1.SGFCore
 ### Codec
