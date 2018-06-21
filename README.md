@@ -1,11 +1,21 @@
 # SGF 
 the Simple Game Foundation
 
-它由3个部分组成。
+它主要由3个工程组成：
 
 * SGFCore：与Unity无关的功能模块。
 * SGFUnity：与Unity相关的功能模块。
 * SGFDebuger：一个日志输出工具。
+
+其余工程说明：
+* ILRuntime：一个ILRuntime的第3方库。
+* SGFServerLite：一个服务器的示例。
+* SGFAppCommon/SGFAppILRScript/SGFAppDemo：一个客户端的综合演示示例，它包括与服务器通讯，热更新等等逻辑。
+
+其余目录：
+* Libs：以上工程编译好的Dll，如果不需要修改代码的话，你可以直接使用这些Dll。
+* Apps：以上示例编译好的Exe，你可以尝试运行一下，可能在不同的机器上运行会有问题，你最好直接打开对应的示例工程来调试运行。
+
 
 ## 1.SGFCore
 ### Codec
