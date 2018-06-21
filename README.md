@@ -131,4 +131,4 @@ the Simple Game Foundation
 ## 3.SGFDebuger
 * 一个日志工具类。
 * 支持在非Unity环境和Unity环境下都能输出格式化日志。
-* 并且支持日志保存为文件。
+* 并且支持日志保存为文件。 
