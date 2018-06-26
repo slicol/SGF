@@ -1,6 +1,6 @@
 ﻿using SGF;
 using SGF.Event;
-using SGF.Math;
+using SGF.MathLite;
 using SGF.Network.Core;
 using SGF.Network.General.Client;
 using SGF.Time;
