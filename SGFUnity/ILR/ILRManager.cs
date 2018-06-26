@@ -1,4 +1,25 @@
-﻿using System;
+﻿/*
+ * Copyright (C) 2018 Slicol Tang. All rights reserved.
+ * 
+ * ILR管理器
+ * 用来实现原生模块与ILR模块的无缝衔接
+ * 你在用模块管理器管理模块时，不需要关心该模块是ILR的，还是原生的
+ * ILR Manager
+ * It is used to realize the seamless connection between the native module and the ILR module
+ * When you manage the module with the module manager, you don't need to care if the module is ILR or native
+ * 
+ * Licensed under the MIT License (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. 
+ * See the License for the specific language governing permissions and limitations under the License.
+*/
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;

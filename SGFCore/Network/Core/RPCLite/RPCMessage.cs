@@ -1,4 +1,23 @@
-﻿using System;
+﻿/*
+ * Copyright (C) 2018 Slicol Tang. All rights reserved.
+ * 
+ * 实现基于C#反射机制的RPC基础功能
+ * 它需要结合具体的通讯模块使用
+ * Implement RPC basic functions based on C# reflection mechanism
+ * It needs to be used in conjunction with specific communication modules
+ * 
+ * Licensed under the MIT License (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. 
+ * See the License for the specific language governing permissions and limitations under the License.
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using ProtoBuf;

@@ -64,6 +64,8 @@
     <Compile Include="Codec\MiniJSON.cs" />
     <Compile Include="Codec\PBSerializer.cs" />
     <Compile Include="Common\MapList.cs" />
+    <Compile Include="Marshals\MarshalArray.cs" />
+    <Compile Include="Marshals\MarshalList.cs" />
     <Compile Include="Utils\Singleton.cs" />
     <Compile Include="Console\ConsoleInput.cs" />
     <Compile Include="Event\SGFEvent.cs" />
@@ -130,6 +132,7 @@
     <Compile Include="Time\SGFTime.cs" />
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\PathUtils.cs" />
+    <Compile Include="Utils\ThrowHelper.cs" />
     <Compile Include="Utils\TimeUtils.cs" />
     <Compile Include="Utils\URLUtils.cs" />
   </ItemGroup>

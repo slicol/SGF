@@ -1,4 +1,30 @@
-﻿using System;
+﻿/*
+ * Copyright (C) 2018 Slicol Tang. All rights reserved.
+ * 
+ * 进程通讯模块。
+ * 它基于UdpSocket实现，以RPC的方式进行调用。
+ * 由于是基于Udp的简单实现，所以对单次通讯的数据大小有要求，不能超过当前系统的MTU。
+ * 如果需要在进程间进行大数据通讯，可以使用Network模块，建立可靠UDP连接，或者TCP连接。
+ * 当然也可以采用共享内存和管道方案，期待后续有人来完善。
+ * Inter-process communication module.
+ * It is based on UdpSocket implementation and is called in RPC mode.
+ * Since it is based on a simple implementation of Udp, there is a requirement for the data size of a single communication and cannot exceed the MTU of the current system.
+ * If you need to perform big data communication between processes, you can use the Network module to establish a reliable UDP connection or a TCP connection.
+ * Of course you can also use shared memory and pipeline solutions and look forward to follow-up improvements.
+ * 
+ * Licensed under the MIT License (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. 
+ * See the License for the specific language governing permissions and limitations under the License.
+*/
+
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
