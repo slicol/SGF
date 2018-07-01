@@ -8,7 +8,7 @@ the Smart Game Foundation
 * SGFDebuger：一个日志输出工具。
 
 其余工程说明：
-* ILRuntime：一个ILRuntime的第3方库。
+* ILRuntime：一个ILRuntime的第3方库。由于官方不推荐以DLL的形式用于项目中，所以该工程将不再维护。
 * SGFServerLite：一个服务器的示例。
 * SGFAppCommon/SGFAppILRScript/SGFAppDemo：一个客户端的综合演示示例，它包括与服务器通讯，热更新等等逻辑。
 
@@ -109,6 +109,13 @@ the Smart Game Foundation
     - ModuleILR，支持模块级别的热更。
     - UIILR，支持UI系统调用热更模块。
 * 本热更方案可以实现在开发时，采用原生C#模式进行开发和单步调试。在发布时，无逢切换为热更模式。整个过程对于开发者是无感知的。
+
+### ILRuntime
+* 用于热更新的运行时库。因为需要支持IL2CPP的缘故，将直接使用其源代码，而非DLL。
+* 于是，如果需要使用ILRuntime，你需要将SGFUnity这个库的源代码直接Copy到Unity工程中。
+
+### Mono.Cecil.20与Mono.Cecil.Pdb
+* 如果将SGFUnity以源代码的形式Copy到 Unity工程中，那么它们有可能与Unity新版本自带的库重复，如果这样的话，可以将其删除。
 
 ### UI
 * UI系统。
