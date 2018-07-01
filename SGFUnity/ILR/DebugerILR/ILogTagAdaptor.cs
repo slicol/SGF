@@ -62,7 +62,7 @@ namespace SGF.Unity.ILR.DebugerILR
                     {
                         isGetLogTagInvoking = true;
                         var result = m_appdomain.Invoke(mGetLogTag, ILInstance) as string;
-                        isGetLogTagInvoking = true;
+                        isGetLogTagInvoking = false;
                         return result;
                     }
 
