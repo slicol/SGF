@@ -17,10 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using SGF.Common;
 using SGF.Network;
 using SGF.Network.protocol;
 using SGF.Unity.UI.SGUI;
+using SGF.Utils;
 using UnityEngine;
 
 namespace SGF.Unity.DebugerGUI

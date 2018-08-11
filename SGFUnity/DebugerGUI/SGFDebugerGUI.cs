@@ -19,8 +19,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using SGF.Common;
-using SGF.Time;
 using SGF.Unity.Common;
 using SGF.Utils;
 using UnityEngine;

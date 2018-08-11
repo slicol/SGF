@@ -27,7 +27,6 @@ using ILRuntime.CLR.TypeSystem;
 using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
 using Mono.Cecil.Pdb;
-using SGF.Common;
 using SGF.Utils;
 using AppDomain = ILRuntime.Runtime.Enviorment.AppDomain;
 using SGF.Extension;

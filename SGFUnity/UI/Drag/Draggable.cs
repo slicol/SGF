@@ -64,31 +64,35 @@ namespace SGF.Unity.UI.Drag
             this.transform.position = eventData.position;
 
             //在 拖动过程中，可以会经过一些Zone
-            if (m_holder.transform.parent != m_holderZone)
+            if (m_holderZone != null)
             {
-                m_holder.transform.SetParent(m_holderZone.transform);
-            }
-
-            int newSiblingIndex = m_holderZone.transform.childCount;
-
-            for (int i = 0; i < m_holderZone.transform.childCount; i++)
-            {
-                if (this.transform.position.x < m_holderZone.transform.GetChild(i).position.x)
+                if (m_holder.transform.parent != m_holderZone)
                 {
-                    newSiblingIndex = i;
-
-                    if (m_holder.transform.GetSiblingIndex() < newSiblingIndex)
-                        newSiblingIndex--;
-
-                    break;
+                    m_holder.transform.SetParent(m_holderZone.transform);
                 }
-            }
 
-            m_holder.transform.SetSiblingIndex(newSiblingIndex);
+                int newSiblingIndex = m_holderZone.transform.childCount;
+
+                for (int i = 0; i < m_holderZone.transform.childCount; i++)
+                {
+                    if (this.transform.position.x < m_holderZone.transform.GetChild(i).position.x)
+                    {
+                        newSiblingIndex = i;
+
+                        if (m_holder.transform.GetSiblingIndex() < newSiblingIndex)
+                            newSiblingIndex--;
+
+                        break;
+                    }
+                }
+
+
+                m_holder.transform.SetSiblingIndex(newSiblingIndex);
+            }
         }
 
 
-        public void OnEndDrag(PointerEventData eventData)
+        public virtual void OnEndDrag(PointerEventData eventData)
         {
             this.transform.SetParent(m_zone.transform);
             this.transform.SetSiblingIndex(m_holder.transform.GetSiblingIndex());

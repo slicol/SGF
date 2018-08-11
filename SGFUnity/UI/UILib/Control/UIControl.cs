@@ -22,8 +22,9 @@ namespace SGF.Unity.UI.UILib.Control
 	public class UIControl:MonoBehaviour
 	{
 		protected virtual void Awake()
-		{ 
-		}
+		{
+		    UIElementBinder.BindAllUIElement(this);
+        }
 
 		public virtual void SetData(object data)
 		{ 

@@ -19,11 +19,11 @@ using UnityEngine;
 
 
 
-namespace SGF.Unity.Common
+namespace SGF.Unity.Utils
 {
-    public class GameObjectUtils
+    public static class GameObjectUtils
     {
-        public static T EnsureComponent<T>(GameObject target) where T : Component
+        public static T EnsureComponent<T>(this GameObject target) where T : Component
         {
             T comp = target.GetComponent<T>();
             if (comp == null)
@@ -33,7 +33,7 @@ namespace SGF.Unity.Common
             return comp;
         }
 
-        public static Component EnsureComponent(GameObject target, Type type)
+        public static Component EnsureComponent(this GameObject target, Type type)
         {
             Component comp = target.GetComponent(type);
             if (comp == null)
@@ -43,7 +43,7 @@ namespace SGF.Unity.Common
             return comp;
         }
 
-        public static T FindComponent<T>(GameObject target, string path) where T : Component
+        public static T FindComponent<T>(this GameObject target, string path) where T : Component
         {
             GameObject obj = FindGameObject(target, path);
             if (obj != null)
@@ -53,7 +53,7 @@ namespace SGF.Unity.Common
             return default(T);
         }
 
-        public static GameObject FindGameObject(GameObject target, string path)
+        public static GameObject FindGameObject(this GameObject target, string path)
         {
             if (target != null)
             {
@@ -122,7 +122,7 @@ namespace SGF.Unity.Common
 
         }
 
-        public static GameObject FindGameObjbyName(string name, GameObject root)
+        public static GameObject FindGameObjbyName(this GameObject root, string name)
         {
             if (root == null)
             {
@@ -143,7 +143,7 @@ namespace SGF.Unity.Common
         }
 
 
-        public static GameObject FindFirstGameObjByPrefix(string prefix, GameObject root)
+        public static GameObject FindFirstGameObjByPrefix(this GameObject root, string prefix)
         {
             Transform[] childs;
             if (root != null)
@@ -171,7 +171,7 @@ namespace SGF.Unity.Common
         }
 
 
-        public static void SetActiveRecursively(GameObject target, bool bActive)
+        public static void SetActiveRecursively(this GameObject target, bool bActive)
         {
 #if (!UNITY_3_5)
             for (int n = target.transform.childCount - 1; 0 <= n; n--)
@@ -182,7 +182,7 @@ namespace SGF.Unity.Common
 		target.SetActiveRecursively(bActive);
 #endif
         }
-        public static void SetLayerRecursively(GameObject target, int layer)
+        public static void SetLayerRecursively(this GameObject target, int layer)
         {
 #if (!UNITY_3_5)
             for (int n = target.transform.childCount - 1; 0 <= n; n--)

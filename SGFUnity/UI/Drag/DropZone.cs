@@ -21,7 +21,7 @@ namespace SGF.Unity.UI.Drag
 {
     public class DropZone:MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
     {
-        public void OnDrop(PointerEventData eventData)
+        public virtual void OnDrop(PointerEventData eventData)
         {
             Draggable d = eventData.pointerDrag.GetComponent<Draggable>();
             if (d != null)

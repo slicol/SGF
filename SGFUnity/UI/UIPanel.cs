@@ -14,7 +14,7 @@
 
 
 using System;
-using SGF.Event;
+using SGF.SEvent;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -35,7 +35,7 @@ namespace SGF.Unity.UI
 
         private float m_closeAniClipTime;
         private object m_closeArg;
-        public SGFEvent<object> onClose = new SGFEvent<object>();
+        public Signal<object> onClose = new Signal<object>();
 
 
         /// <summary>
@@ -48,6 +48,8 @@ namespace SGF.Unity.UI
         void Awake()
         {
             LOG_TAG = this.GetType().Name;
+            UIElementBinder.BindAllUIElement(this);
+
             OnAwake();
         }
 

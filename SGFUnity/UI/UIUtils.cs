@@ -13,7 +13,8 @@
 */
 
 
-using SGF.Unity.Common;
+using SGF.Unity.Utils;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -66,6 +67,25 @@ namespace SGF.Unity.UI
             }
         }
 
-        
+
+        /// <summary>
+        /// 方便寻找Panel上的UI控件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="controlName"></param>
+        /// <returns></returns>
+        public static T Find<T>(MonoBehaviour parent, string controlName) where T : MonoBehaviour
+        {
+            Transform target = parent.transform.Find(controlName);
+            if (target != null)
+            {
+                return target.GetComponent<T>();
+            }
+            else
+            {
+                Debuger.LogError("未找到UI控件：{0}", controlName);
+                return default(T);
+            }
+        }
     }
 }

@@ -39,6 +39,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libs\Common\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="SGFCore, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\SGFCore.dll</HintPath>
+    </Reference>
     <Reference Include="SGFDebuger, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libs\SGFDebuger.dll</HintPath>
@@ -315,6 +319,7 @@
     <Compile Include="UI\SGUI\Drawing.cs" />
     <Compile Include="UI\SGUI\DrawingSimple.cs" />
     <Compile Include="UI\SGUI\GUICurve.cs" />
+    <Compile Include="UI\UIElementBinder.cs" />
     <Compile Include="UI\UILib\Control\CtlList.cs" />
     <Compile Include="UI\UILib\Control\CtlListItem.cs" />
     <Compile Include="UI\UILib\Control\CtlProgressBar.cs" />
@@ -341,12 +346,6 @@
     <Compile Include="Common\MonoSingleton.cs" />
     <Compile Include="Utils\NetUtils.cs" />
     <Compile Include="Extension\VectorExtensions.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SGFCore\SGFCore.csproj">
-      <Project>{eeb72dfc-0fa5-44de-b75a-586f69377aa6}</Project>
-      <Name>SGFCore</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

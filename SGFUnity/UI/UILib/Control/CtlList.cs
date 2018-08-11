@@ -109,6 +109,8 @@ namespace SGF.Unity.UI.UILib.Control
 
 		protected override void Awake()
 		{
+            base.Awake();
+
 			m_scrollRect = GetComponent<ScrollRect >();
 			m_scrollRect.horizontal = m_direction == Direction.Horizontal;
 			m_scrollRect.vertical = m_direction == Direction.Vertical;
