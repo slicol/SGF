@@ -15,40 +15,53 @@
  * See the License for the specific language governing permissions and limitations under the License.
 */
 
-
 using System.Net;
+using SGF.Network.General.Proto;
+
 
 namespace SGF.Network.General.Server
 {
-
     public interface ISessionListener
     {
-        void OnReceive(ISession session, byte[] bytes, int len);
+        void OnReceive(ISession session, NetMessage msg);
+        void OnDisconnected(ISession session);
     }
-
-    public static class SessionID
-    {
-        private static uint ms_lastSid = 0;
-        public static uint NewID()
-        {
-            return ++ms_lastSid;
-        }
-    }
-
 
     public interface ISession
     {
-        uint id { get; }
-        uint uid { get; }
-        ushort ping { get; set; }
-        void Active(IPEndPoint remotePoint);
-        bool IsActived();
-        bool IsAuth();
-        void SetAuth(uint userId);
-        bool Send(byte[] bytes, int len);
-        IPEndPoint remoteEndPoint { get; }
+        uint AuthToken { get; set; }
+        /// <summary>
+        /// SessionID
+        /// </summary>
+        uint Id { get; }
+        /// <summary>
+        /// 连接是否被激活
+        /// </summary>
+        bool IsActived { get; }
 
-        void Tick(uint currentTimeMS);
-        void DoReceiveInGateway(byte[] buffer, int len);
+        /// <summary>
+        /// 连接的Ping值
+        /// </summary>
+        ushort Ping { get; set; }
+        /// <summary>
+        /// 初始化成功后，可以获取本地EndPoint
+        /// </summary>
+        IPEndPoint LocalEndPoint { get; }
+
+        /// <summary>
+        /// 连接建立后，可以获取远端EndPoint
+        /// </summary>
+        IPEndPoint RemoteEndPoint { get; }
+
+        /// <summary>
+        /// 数据发送
+        /// 有可能是同步模式
+        /// 也可能是异步模式
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        bool Send(NetMessage msg);
+
+        void Tick(int currentMS);
     }
 }

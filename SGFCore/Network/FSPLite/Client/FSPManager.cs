@@ -16,8 +16,9 @@
 */
 
 using System;
-using SGF.Common;
+
 using SGF.Extension;
+using SGF.Utils;
 
 namespace SGF.Network.FSPLite.Client
 {

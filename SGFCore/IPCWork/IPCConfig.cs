@@ -16,7 +16,7 @@
 */
 
 using System.Collections.Generic;
-using SGF.Common;
+
 using SGF.Utils;
 
 namespace SGF.IPCWork
@@ -48,7 +48,7 @@ namespace SGF.IPCWork
         {
             Debuger.Log();
             string jsonStr = FileUtils.ReadString(Path);
-            var obj = MiniJSON.Json.Deserialize(jsonStr) as List<object>;
+            var obj = MiniJSON.Safe.Json.Deserialize(jsonStr) as List<object>;
             for (int i = 0; i < obj.Count; i++)
             {
                 var infoJson = obj[i] as Dictionary<string, object>;

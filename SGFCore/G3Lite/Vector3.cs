@@ -342,7 +342,10 @@ namespace SGF.G3Lite
         }
 
 
-
+        public static implicit operator Vector3(Vector2 v)
+        {
+            return new Vector3(v.x, v.y, 0);
+        }
 
 
 #if G3_USING_UNITY

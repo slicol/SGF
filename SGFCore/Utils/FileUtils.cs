@@ -17,15 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Runtime.InteropServices;
 using System.Text;
+using SGF.Marshals;
 
 
 namespace SGF.Utils
 {
     public class FileUtils
     {
-        private const string LOG_TAG = "FileUtils";
-
         public static byte[] ReadFile(string fullpath)
         {
             byte[] buffer = null;
@@ -40,7 +41,7 @@ namespace SGF.Utils
                 }
                 catch (Exception e)
                 {
-                    Debuger.LogError(LOG_TAG, "ReadFile() Path:{0}, Error:{1}", fullpath, e.Message);
+                    Debuger.LogError("ReadFile() Path:{0}, Error:{1}", fullpath, e.Message);
                 }
                 finally
                 {
@@ -52,10 +53,11 @@ namespace SGF.Utils
             }
             else
             {
-                Debuger.LogError(LOG_TAG, "ReadFile() File is Not Exist: {0}", fullpath);
+                Debuger.LogError("ReadFile() File is Not Exist: {0}", fullpath);
             }
             return buffer;
         }
+
 
         public static string[] ReadFileLines(string fullpath)
         {
@@ -74,7 +76,7 @@ namespace SGF.Utils
                 }
                 catch (Exception e)
                 {
-                    Debuger.LogError(LOG_TAG, "ReadFileLines() Path:{0}, Error:{1}", fullpath, e.Message);
+                    Debuger.LogError("ReadFileLines() Path:{0}, Error:{1}", fullpath, e.Message);
                 }
                 finally
                 {
@@ -86,7 +88,7 @@ namespace SGF.Utils
             }
             else
             {
-                Debuger.LogError(LOG_TAG, "ReadFileLines() File is Not Exist: {0}", fullpath);
+                Debuger.LogError("ReadFileLines() File is Not Exist: {0}", fullpath);
             }
             return listLines.ToArray();
         }
@@ -130,7 +132,7 @@ namespace SGF.Utils
                 }
                 catch (Exception e)
                 {
-                    Debuger.LogError(LOG_TAG, "SaveFile() CreateDirectory Error! Dir:{0}, Error:{1}", dir, e.Message);
+                    Debuger.LogError("SaveFile() CreateDirectory Error! Dir:{0}, Error:{1}", dir, e.Message);
                     return -1;
                 }
 
@@ -144,7 +146,7 @@ namespace SGF.Utils
             }
             catch (Exception e)
             {
-                Debuger.LogError(LOG_TAG, "SaveFile() Path:{0}, Error:{1}", fullpath, e.Message);
+                Debuger.LogError("SaveFile() Path:{0}, Error:{1}", fullpath, e.Message);
                 fs.Close();
                 return -1;
             }
@@ -153,13 +155,127 @@ namespace SGF.Utils
             return content.Length;
         }
 
+
+
         public static int SaveFile(string fullpath, string content)
         {
             byte[] buffer = Encoding.UTF8.GetBytes(content);
             return SaveFile(fullpath, buffer);
         }
 
+        public static List<string> GetFileFullNames(string dir, SearchOption option, string searchPattern,
+            string[] listIgnoredSuffix = null)
+        {
+            List<string> result = new List<string>();
+            var list = GetFiles(dir, option, searchPattern, listIgnoredSuffix);
+            for (int i = 0; i < list.Count; i++)
+            {
+                result.Add(list[i].FullName);
+            }
+            return result;
+        }
 
+        public static List<string> GetFileNames(string dir, SearchOption option, string searchPattern,
+            string[] listIgnoredSuffix = null)
+        {
+            List<string> result = new List<string>();
+            var list = GetFiles(dir, option, searchPattern, listIgnoredSuffix);
+            for (int i = 0; i < list.Count; i++)
+            {
+                result.Add(list[i].Name);
+            }
+            return result;
+        }
+
+        public static List<FileInfo> GetFiles(string dir, SearchOption option, string searchPattern, string[] listIgnoredSuffix = null)
+        {
+            List<FileInfo> result = new List<FileInfo>();
+
+            if (Directory.Exists(dir))
+            {
+                DirectoryInfo directory = new DirectoryInfo(dir);
+                FileInfo[] files = directory.GetFiles(searchPattern, option);
+
+                int len = files.Length;
+                for (int i = 0; i < len; i++)
+                {
+                    FileInfo f = files[i];
+
+                    if (listIgnoredSuffix != null)
+                    {
+                        int lenIgnored = listIgnoredSuffix.Length;
+                        for (int j = 0; j < lenIgnored; j++)
+                        {
+                            if (f.FullName.EndsWith(listIgnoredSuffix[i]))
+                            {
+                                continue;
+                            }
+                        }
+                    }
+
+                    result.Add(f);
+                }
+            }
+
+            return result;
+        }
+
+
+        public static void EnsureDirectory(string dirPath)
+        {
+            dirPath = dirPath.Replace('\\', '/');
+            var tokens = dirPath.Split('/');
+
+            string dstTempPath = "";
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                dstTempPath += tokens[i] + "/";
+                if (!Directory.Exists(dstTempPath))
+                {
+                    Directory.CreateDirectory(dstTempPath);
+                }
+            }
+        }
+
+        public static void EnsureFileDirectory(string filePath)
+        {
+            filePath = filePath.Replace('\\', '/');
+            var tokens = filePath.Split('/');
+
+            string dstTempPath = "";
+            for (int i = 0; i < tokens.Length - 1; i++)
+            {
+                dstTempPath += tokens[i] + "/";
+                if (!Directory.Exists(dstTempPath))
+                {
+                    Directory.CreateDirectory(dstTempPath);
+                }
+            }
+        }
+
+
+
+        public static bool Copy(string srcPath, string dstPath)
+        {
+            if (!File.Exists(srcPath))
+            {
+                return false;
+            }
+
+            EnsureFileDirectory(dstPath);
+            
+            try
+            {
+                File.Copy(srcPath, dstPath);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debuger.LogError(e.Message);
+            }
+
+            return false;
+        }
     }
 }
 

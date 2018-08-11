@@ -123,6 +123,14 @@ namespace SGF.Codec
             return t;
         }
 
+        public static object NDeserialize(MemoryStream buffer, System.Type type)
+        {
+            object t = null;
+            t = RuntimeTypeModel.Default.Deserialize(buffer, null, type);
+            return t;
+        }
+
+
         public static object NDeserialize(byte[] buffer, int len, System.Type type)
         {
             object t = null;

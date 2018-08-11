@@ -1,8 +1,6 @@
 ﻿/*
  * Copyright (C) 2018 Slicol Tang. All rights reserved.
  * 
- * 网络模块
- * Network
  * 
  * Licensed under the MIT License (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -16,18 +14,26 @@
 */
 
 
-namespace SGF.Network.Core
+namespace SGF.Network.General
 {
-    public enum NetErrorCode
+    public class NetDefine
     {
-        UnkownError = -1,
-        NoError = 0,
-        SocketError,
-        Timeout,
-        Disconnected,
-        SessionExpire,
-        DeserializeError,
-        ReconnectFailed
-        //不能超过SocketError的枚举值
+        /// <summary>
+        /// 收包数据的最小Buffer大小
+        /// 实际收包时，如果Buffer里的数据没有人读取，会自动扩容
+        /// </summary>
+        public static int ReceiveBufferMinSize = 1024;
+
+        /// <summary>
+        /// Socket的Buffer大小
+        /// </summary>
+        public static int SocketBufferSize = 8192;
+
+        /// <summary>
+        /// 底层分包的Buffer大小
+        /// </summary>
+        public static int PacketBufferSize = 8192;
     }
+
+    
 }

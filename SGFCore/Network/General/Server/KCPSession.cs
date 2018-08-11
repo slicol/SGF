@@ -16,110 +16,141 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using SGF.Network.Core;
+using SGF.Network.General.Proto;
+using SGF.SEvent;
 using SGF.Time;
 
 
 namespace SGF.Network.General.Server
 {
-    public class KCPSession:ISession
+    public class KcpSession:ISession, ILogTag
     {
-        public static int ActiveTimeout = 30;
+        public string LOG_TAG { get; protected set; }
 
-        private uint m_id;
-        private uint m_userId;
-        private Action<ISession, byte[], int> m_sender;
+        //==========================================================
+        //事件
+        //==========================================================
+        public Signal<ISession, int> onSendError { get; private set; }
+        public Signal<ISession, int> onReceiveError { get; private set; }
+
+        //==========================================================
+        //公共成员变量
+        //==========================================================
+        public uint AuthToken { get; set; }
+        public uint Id { get; protected set; }
+        public IPEndPoint LocalEndPoint { get; private set; }
+        public IPEndPoint RemoteEndPoint { get; private set; }
+        public ushort Ping { get; set; }
+        public bool IsActived { get { return Thread.VolatileRead(ref this.m_actived) == 1; } }
+        private int m_actived = 0;
+
+        //==========================================================
+        //私有成员变量
+        //==========================================================
+        private Socket m_socket;
         private ISessionListener m_listener;
 
+        private NetBufferWriter m_bufferSend;
+        private Queue<NetMessage> m_queueReceive;
+
+        //KCP
         private KCP m_Kcp;
         private SwitchQueue<byte[]> m_RecvBufQueue = new SwitchQueue<byte[]>();
+        private uint m_NextKcpUpdateTime = 0;
+        private bool m_NeedKcpUpdateFlag = false;
 
-        public KCPSession(uint sid, Action<ISession, byte[], int> sender, ISessionListener listener)
+
+        public KcpSession(uint sid, ISessionListener listener)
         {
-            Debuger.Log("sid:{0}", sid);
+            LOG_TAG = "KcpSession[" + sid + "]";
+            this.Log();
 
-            m_id = sid;
-            m_sender = sender;
+            onSendError = new Signal<ISession, int>();
+            onReceiveError = new Signal<ISession, int>();
+
+            m_bufferSend = new NetBufferWriter(new byte[0]);
+            m_queueReceive = new Queue<NetMessage>();
+
+            this.Id = sid;
             m_listener = listener;
-
-            m_Kcp = new KCP(sid, HandleKcpSend);
-            m_Kcp.NoDelay(1, 10, 2, 1);
-            m_Kcp.WndSize(128, 128);
 
 
         }
 
         public string ToString(string prefix = "")
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("[{0}] UserId:{1}, Active:{2}, Ping:{3}, EndPoint:{4}", m_id, m_userId, m_active, ping, remoteEndPoint);
-            return sb.ToString();
+            return "KcpSession[" + Id + "," + RemoteEndPoint.Port + "]";
         }
 
-        private void HandleKcpSend(byte[] bytes, int len)
+        public virtual void Clean()
         {
-            m_sender(this, bytes, len);
+            this.Log();
+
+            m_socket = null;
+            m_actived = 0;
         }
 
-
-        public uint id { get { return m_id; } }
-        public uint uid { get { return m_userId; } }
-        public ushort ping { get; set; }
-        public IPEndPoint remoteEndPoint { get; private set; }
-
-        public bool IsAuth()
+        //======================================================================
+        //连接与断开连接相关
+        //======================================================================
+        public void Active(Socket socket, IPEndPoint remoteEndPoint)
         {
-            return m_userId > 0;
+            RemoteEndPoint = (IPEndPoint)remoteEndPoint;
 
-        }
-
-        public void SetAuth(uint userId)
-        {
-            m_userId = userId;
-        }
-
-
-        private int m_lastActiveTime = 0;
-        private bool m_active = false;
-        public bool IsActived()
-        {
-            if (!m_active)
+            if (Interlocked.CompareExchange(ref this.m_actived, 1, 0) == 0)
             {
-                return false;
-            }
+                m_socket = socket;
 
-            int dt = (int)SGFTime.GetTimeSinceStartup() - m_lastActiveTime;
-            if (dt > ActiveTimeout)
-            {
-                m_active = false;
+                LocalEndPoint = (IPEndPoint)socket.LocalEndPoint;
+
+                m_Kcp = new KCP(Id, HandleKcpSend);
+                m_Kcp.NoDelay(1, 10, 2, 1);
+                m_Kcp.WndSize(128, 128);
             }
-            return m_active;
         }
 
 
-        public void Active(IPEndPoint remoteEndPoint)
+        //======================================================================
+        //发送数据
+        //======================================================================
+        public bool Send(NetMessage msg)
         {
-            m_lastActiveTime = (int)SGFTime.GetTimeSinceStartup();
-            m_active = true;
+            this.Log();
 
-            this.remoteEndPoint = remoteEndPoint as IPEndPoint;
-
-        }
-
-
-        public bool Send(byte[] bytes, int len)
-        {
-            if (!IsActived())
+            if (!IsActived)
             {
                 Debuger.LogWarning("Session已经不活跃了！");
                 return false;
             }
 
+
+            msg.head.sid = Id;
+
+            m_bufferSend.Attach(new byte[msg.Length], 0);
+            msg.Serialize(m_bufferSend);
+
+            var bytes = m_bufferSend.GetBytes();
+            var len = m_bufferSend.Length;
+
             return m_Kcp.Send(bytes, len) == 0;
+            
         }
 
+        private void HandleKcpSend(byte[] bytes, int len)
+        {
+            m_socket.SendTo(bytes, 0, len, SocketFlags.None, RemoteEndPoint);
+        }
+
+
+        //======================================================================
+        //接收数据
+        //======================================================================
 
         public void DoReceiveInGateway(byte[] buffer, int size)
         {
@@ -151,7 +182,10 @@ namespace SGF.Network.General.Server
                     var recvBuffer = new byte[size];
                     if (m_Kcp.Recv(recvBuffer) > 0)
                     {
-                        m_listener.OnReceive(this, recvBuffer, size);
+                        NetMessage msg = new NetMessage();
+                        msg.Deserialize(recvBuffer, size);
+
+                        m_listener.OnReceive(this, msg);
                     }
                 }
 
@@ -159,14 +193,11 @@ namespace SGF.Network.General.Server
         }
 
 
-        private uint m_NextKcpUpdateTime = 0;
-        private bool m_NeedKcpUpdateFlag = false;
-
-        public void Tick(uint currentTimeMS)
+        public void Tick(int currentTimeMS)
         {
             DoReceiveInMain();
 
-            uint current = currentTimeMS;
+            uint current = (uint)currentTimeMS;
 
             if (m_NeedKcpUpdateFlag || current >= m_NextKcpUpdateTime)
             {
@@ -177,6 +208,6 @@ namespace SGF.Network.General.Server
         }
 
 
-        
+
     }
 }

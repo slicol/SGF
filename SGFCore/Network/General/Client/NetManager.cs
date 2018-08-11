@@ -17,34 +17,56 @@
 
 
 using System;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using SGF.Codec;
-using SGF.Common;
 using SGF.Network.Core;
 using SGF.Network.Core.RPCLite;
+using SGF.Network.General.Proto;
+using SGF.SEvent;
 using SGF.Time;
+using SGF.Utils;
+
 
 namespace SGF.Network.General.Client
 {
     public class NetManager
     {
+        public Signal onDisconnected { get; private set; }
         private IConnection m_conn;
-        private uint m_uid;
-        private RPCManagerBase m_rpc;
+        private uint m_token;
+        private RPCManager m_rpc;
 
-        public void Init(Type connType, int connId, int bindPort)
+        public void Init(ConnectionType connType, int localPort = 0)
         {
-            Debuger.Log("connType:{0}, connId:{1}, bindPort:{2}", connType, connId, bindPort);
+            Debuger.Log("connType:{0}, localPort:{1}", connType, localPort);
 
-            m_conn = Activator.CreateInstance(connType) as IConnection;
-            m_conn.Init(connId, bindPort);
+            if (connType == ConnectionType.TCP)
+            {
+                var conn = new TcpConnection(localPort, null, 3);
+                m_conn = conn;
+                conn.onDisconnected.AddListener(OnDisconnected);
+            }
+            else if (connType == ConnectionType.UDP)
+            {
+                m_conn = new UdpConnection(localPort, null);
+            }
+            else if(connType == ConnectionType.RUDP)
+            {
+                m_conn = new KcpConnection(localPort);
+            }
+            else
+            {
+                throw new ArgumentException("未实现该连接类型：" + connType);
+            }
 
-            m_rpc = new RPCManagerBase();
+            onDisconnected = new Signal();
+            m_rpc = new RPCManager(m_conn);
             m_rpc.Init();
-
         }
 
+        public RPCManager Rpc { get { return m_rpc; } }
 
         public void Clean()
         {
@@ -61,9 +83,15 @@ namespace SGF.Network.General.Client
                 m_rpc = null;
             }
 
+
             m_listNtfListener.Clear();
             m_listRspListener.Clear();
 
+        }
+
+        private void OnDisconnected(IConnection  conn)
+        {
+            onDisconnected.Invoke();
         }
 
         public void Dump()
@@ -74,7 +102,7 @@ namespace SGF.Network.General.Client
             {
                 ListenerHelper helper = pair.Value;
                 sb.AppendFormat("\t<cmd:{0}, msg:{1}, \tlistener:{2}.{3}>\n", pair.Key, helper.TMsg.Name,
-                    helper.onMsg.Method.DeclaringType.Name, helper.onMsg.Method.Name);
+                    helper.onMsgMethod.DeclaringType.Name, helper.onMsgMethod.Name);
             }
 
             Debuger.LogWarning("\nNotify Listeners ({0}):\n{1}", m_listNtfListener.Count, sb);
@@ -85,7 +113,7 @@ namespace SGF.Network.General.Client
             {
                 ListenerHelper helper = pair.Value;
                 sb.AppendFormat("\t<index:{0}, msg:{1}, \tlistener:{2}.{3}>\n", pair.Key, helper.TMsg.Name,
-                    helper.onMsg.Method.DeclaringType.Name, helper.onMsg.Method.Name);
+                    helper.onMsgMethod.DeclaringType.Name, helper.onMsgMethod.Name);
             }
 
             Debuger.LogWarning("\nRespond Listeners ({0}):\n{1}", m_listRspListener.Count, sb);
@@ -93,10 +121,11 @@ namespace SGF.Network.General.Client
             m_rpc.Dump();
         }
 
-
-        public void SetUserId(uint uid)
+        public void SetToken(uint token)
         {
-            m_uid = uid;
+            Debuger.Log(token);
+            m_token = token;
+            m_rpc.SetToken(token);
         }
 
 
@@ -104,7 +133,7 @@ namespace SGF.Network.General.Client
         {
             Debuger.Log("ip:{0}, port:{1}", ip, port);
 
-            if (m_conn.Connected)
+            if (m_conn.IsActived)
             {
                 Debuger.Log("旧的连接还在，先关闭旧的连接");
                 m_conn.Close();
@@ -114,7 +143,19 @@ namespace SGF.Network.General.Client
             m_conn.onReceive.AddListener(OnReceive);
         }
 
-        public bool Connected { get { return m_conn.Connected; } }
+        public void Connect(IPEndPoint[] listEndPoints)
+        {
+            if (m_conn.IsActived)
+            {
+                Debuger.Log("旧的连接还在，先关闭旧的连接");
+                m_conn.Close();
+            }
+
+            m_conn.Connect(listEndPoints);
+            m_conn.onReceive.AddListener(OnReceive);
+        }
+
+        public bool IsConnected { get { return m_conn.IsActived; } }
 
         public void Close()
         {
@@ -130,15 +171,12 @@ namespace SGF.Network.General.Client
         }
 
 
-        private void OnReceive(byte[] bytes, int len)
+        private void OnReceive(NetMessage msg)
         {
-            NetMessage msg = new NetMessage();
-            msg.Deserialize(bytes, len);
-
             if (msg.head.cmd == 0)
             {
                 RPCMessage rpcmsg = PBSerializer.NDeserialize<RPCMessage>(msg.content);
-                HandleRPCMessage(rpcmsg);
+                m_rpc.OnReceive(rpcmsg);
             }
             else
             {
@@ -151,123 +189,6 @@ namespace SGF.Network.General.Client
 
 
         //========================================================================
-        //RPC的协议处理方式
-        //========================================================================
-
-        private string m_currInvokingName;
-
-        public void RegisterRPCListener(object listener)
-        {
-            m_rpc.RegisterListener(listener);
-        }
-
-        public void UnRegisterRPCListener(object listener)
-        {
-            m_rpc.UnRegisterListener(listener);
-        }
-
-
-
-        private void HandleRPCMessage(RPCMessage rpcmsg)
-        {
-            Debuger.Log("Connection[{0}]-> {1}({2})", m_conn.id, rpcmsg.name, rpcmsg.args);
-
-            var helper = m_rpc.GetMethodHelper(rpcmsg.name);
-            if (helper != null)
-            {
-                object[] args = rpcmsg.args;
-                var raw_args = rpcmsg.raw_args;
-
-                var paramInfo = helper.method.GetParameters();
-
-                if (raw_args.Count == paramInfo.Length)
-                {
-                    for (int i = 0; i < raw_args.Count; i++)
-                    {
-                        if (raw_args[i].type == RPCArgType.PBObject)
-                        {
-                            var type = paramInfo[i].ParameterType;
-                            object arg = PBSerializer.NDeserialize(raw_args[i].raw_value, type);
-                            args[i] = arg;
-                        }
-                    }
-
-                    m_currInvokingName = rpcmsg.name;
-
-                    try
-                    {
-                        helper.method.Invoke(helper.listener, BindingFlags.NonPublic, null, args, null);
-                    }
-                    catch (Exception e)
-                    {
-                        Debuger.LogError("RPC调用出错：{0}\n{1}", e.Message, e.StackTrace);
-                    }
-
-                    m_currInvokingName = null;
-                }
-                else
-                {
-                    Debuger.LogWarning("参数数量不一致！");
-                }
-                
-            }
-            else
-            {
-                Debuger.LogWarning("RPC不存在！");
-            }
-        }
-
-
-
-        public void Invoke(string name, params object[] args)
-        {
-            Debuger.Log("->Connection[{0}] {1}({2})", m_conn.id, name, args);
-
-            RPCMessage rpcmsg = new RPCMessage();
-            rpcmsg.name = name;
-            rpcmsg.args = args;
-            byte[] buffer = PBSerializer.NSerialize(rpcmsg);
-
-            NetMessage msg = new NetMessage();
-            msg.head = new ProtocolHead();
-            msg.head.uid = m_uid;
-            msg.head.dataSize = (ushort)buffer.Length;
-            msg.content = buffer;
-
-            byte[] tmp = null;
-            int len = msg.Serialize(out tmp);
-
-            m_conn.Send(tmp, len);
-
-        }
-
-        public void Return(params object[] args)
-        {
-            if (m_conn != null)
-            {
-                var name = "On" + m_currInvokingName;
-                Debuger.Log("->Connection[{0}] {1}({2})", m_conn.id, name, args);
-
-                RPCMessage rpcmsg = new RPCMessage();
-                rpcmsg.name = name;
-                rpcmsg.args = args;
-                byte[] buffer = PBSerializer.NSerialize(rpcmsg);
-
-                NetMessage msg = new NetMessage();
-                msg.head = new ProtocolHead();
-                msg.head.uid = m_uid;
-                msg.head.dataSize = (ushort)buffer.Length;
-                msg.content = buffer;
-
-                byte[] tmp = null;
-                int len = msg.Serialize(out tmp);
-
-                m_conn.Send(tmp, len);
-            }
-        }
-
-
-        //========================================================================
         //传统的协议(Protobuf)处理方式
         //========================================================================
 
@@ -277,10 +198,20 @@ namespace SGF.Network.General.Client
             public uint cmd;
             public uint index;
             public Type TMsg;
-            public Delegate onMsg;
+            public Delegate onMsg0;
+            public Delegate onMsg1;
             public Delegate onErr;
             public float timeout;
             public float timestamp;
+
+            public MethodInfo onMsgMethod
+            {
+                get
+                {
+                    var onMsg_ = onMsg0 != null ? onMsg0 : (onMsg1 != null ? onMsg1 : null);
+                    return onMsg_.Method;
+                }
+            }
         }
 
         static class MessageIndexGenerator
@@ -296,60 +227,77 @@ namespace SGF.Network.General.Client
         private MapList<uint, ListenerHelper> m_listRspListener = new MapList<uint, ListenerHelper>();
 
 
-        public void Send<TReq, TRsp>(uint cmd, TReq req, Action<TRsp> onRsp, float timeout = 30,
+        /// <summary>
+        /// 发送数据
+        /// </summary>
+        /// <typeparam name="TRsp"></typeparam>
+        /// <param name="cmd"></param>
+        /// <param name="req"></param>
+        /// <param name="onRsp"></param>
+        /// <param name="timeout"></param>
+        /// <param name="onErr"></param>
+        /// <returns>返回唯一的发送Index</returns>
+        public uint Send<TRsp>(uint cmd, object req, Action<uint, TRsp> onRsp, float timeout = 30,
             Action<NetErrorCode> onErr = null)
         {
-            NetMessage msg = new NetMessage();
-            msg.head.index = MessageIndexGenerator.NewIndex();
-            msg.head.cmd = cmd;
-            msg.head.uid = m_uid;
-            msg.content = PBSerializer.NSerialize(req);
-            msg.head.dataSize = (ushort)msg.content.Length;
-
-            byte[] temp;
-            int len = msg.Serialize(out temp);
-            m_conn.Send(temp, len);
-
-            AddListener(cmd, typeof(TRsp), onRsp, msg.head.index, timeout, onErr);
-        }
-
-
-        private void AddListener(uint cmd, Type TRsp, Delegate onRsp, uint index, float timeout, Action<NetErrorCode> onErr)
-        {
+            Debuger.LogVerbose("cmd:{0}, timeout:{1}", cmd, timeout);
+            uint index = MessageIndexGenerator.NewIndex();
             ListenerHelper helper = new ListenerHelper()
             {
                 cmd = cmd,
                 index = index,
-                TMsg = TRsp,
+                TMsg = typeof(TRsp),
                 onErr = onErr,
-                onMsg = onRsp,
+                onMsg0 = onRsp,
                 timeout = timeout,
                 timestamp = SGFTime.GetTimeSinceStartup()
             };
 
             m_listRspListener.Add(index, helper);
+
+
+            NetMessage msg = new NetMessage();
+            msg.head.index = index;
+            msg.head.cmd = cmd;
+            msg.head.token = m_token;
+            msg.content = PBSerializer.NSerialize(req);
+            msg.head.dataSize = (ushort)msg.content.Length;
+
+            m_conn.Send(msg);
+            return index;
         }
 
 
         public void Send<TReq>(uint cmd, TReq req)
         {
-            Debuger.Log("cmd:{0}", cmd);
-
+            Debuger.LogVerbose("cmd:{0}", cmd);
 
             NetMessage msg = new NetMessage();
             msg.head.index = 0;
             msg.head.cmd = cmd;
-            msg.head.uid = m_uid;
+            msg.head.token = m_token;
             msg.content = PBSerializer.NSerialize(req);
             msg.head.dataSize = (ushort)msg.content.Length;
 
-            byte[] temp;
-            int len = msg.Serialize(out temp);
-            m_conn.Send(temp, len);
+            m_conn.Send(msg);
+        }
+
+        public void Send<TMsg>(ProtocolHead head, uint cmd, TMsg msg)
+        {
+            Debuger.LogVerbose("cmd:{0}", cmd);
+
+            NetMessage msgobj = new NetMessage();
+            msgobj.head = head;
+            msgobj.head.cmd = cmd;
+            msgobj.head.token = m_token;
+            msgobj.content = PBSerializer.NSerialize(msg);
+            msgobj.head.dataSize = (ushort)msgobj.content.Length;
+
+            m_conn.Send(msgobj);
         }
 
 
-        public void AddListener<TNtf>(uint cmd, Action<TNtf> onNtf)
+        public void AddListener<TNtf>(uint cmd, Action<ProtocolHead, TNtf> onNtf)
         {
             Debuger.Log("cmd:{0}, listener:{1}.{2}", cmd, onNtf.Method.DeclaringType.Name, onNtf.Method.Name);
 
@@ -357,28 +305,52 @@ namespace SGF.Network.General.Client
             ListenerHelper helper = new ListenerHelper()
             {
                 TMsg = typeof(TNtf),
-                onMsg = onNtf
+                onMsg1 = onNtf
             };
 
             m_listNtfListener.Add(cmd, helper);
         }
 
-
-
-
+        public void RemoveListener(uint cmd)
+        {
+            Debuger.Log("cmd:{0}", cmd);
+            m_listNtfListener.Remove(cmd);
+        }
 
 
         private void HandlePBMessage(NetMessage msg)
         {
+            Debuger.LogVerbose("msg.head:{0}", msg.head);
+
             if (msg.head.index == 0)
             {
                 var helper = m_listNtfListener[msg.head.cmd];
                 if (helper != null)
                 {
-                    object obj = PBSerializer.NDeserialize(msg.content, helper.TMsg);
+                    object obj = null;
+
+                    try
+                    {
+                        obj = PBSerializer.NDeserialize(msg.content, helper.TMsg);
+                    }
+                    catch (Exception e)
+                    {
+                        Debuger.LogError("MsgName:{0}, msg.head:{0}", helper.TMsg.Name, msg.head);
+                        Debuger.LogError("DeserializeError:" + e.Message);
+                    }
+
                     if (obj != null)
                     {
-                        helper.onMsg.DynamicInvoke(obj);
+                        try
+                        {
+                            helper.onMsg1.DynamicInvoke(msg.head, obj);
+                        }
+                        catch (Exception e)
+                        {
+                            Debuger.LogError("MsgName:{0}, msg.head:{0}", helper.TMsg.Name, msg.head);
+                            Debuger.LogError("BusinessError:" + e.Message + "\n" + e.StackTrace);
+                        }
+
                     }
                     else
                     {
@@ -400,7 +372,7 @@ namespace SGF.Network.General.Client
                     object obj = PBSerializer.NDeserialize(msg.content, helper.TMsg);
                     if (obj != null)
                     {
-                        helper.onMsg.DynamicInvoke(obj);
+                        helper.onMsg0.DynamicInvoke(msg.head.index, obj);
                     }
                     else
                     {
@@ -442,7 +414,7 @@ namespace SGF.Network.General.Client
                     }
                 }
             }
-            
+
         }
 
     }

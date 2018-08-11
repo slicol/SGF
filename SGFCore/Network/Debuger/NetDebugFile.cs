@@ -19,7 +19,7 @@
 using System;
 using System.Collections.Generic;
 using SGF.Codec;
-using SGF.Common;
+
 using SGF.Network.protocol;
 using SGF.Utils;
 

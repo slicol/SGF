@@ -16,34 +16,83 @@
 */
 
 using System;
-using SGF.Event;
+using System.Net;
+using SGF.Network.General.Proto;
+using SGF.SEvent;
 
 namespace SGF.Network.General.Client
 {
     public interface IConnection
     {
         /// <summary>
-        /// 字节数组，长度
+        /// 当收到数据时发出信号
+        /// 参数：字节数组，长度
         /// </summary>
-        SGFEvent<byte[], int> onReceive { get; }
-
-        void Init(int connId, int bindPort);
+        Signal<NetMessage> onReceive { get; }
+        Signal<IConnection, int, string> onServerError{ get; }
+        
+        /// <summary>
+        /// 清理整个连接，即反初始化
+        /// 它是统一管理的
+        /// </summary>
         void Clean();
 
-        bool Connected { get; }
-
-        int id { get; }
-
-        int bindPort { get; }
-
-
-
-        void Connect(string ip, int port);
-
+        /// <summary>
+        /// 主动关闭连接
+        /// 对于Client来讲，有可能再次重连
+        /// 对于Server来讲，用于强制将 Client断线，然后由Gateway统一Clean
+        /// </summary>
         void Close();
 
-        bool Send(byte[] bytes, int len);
+        /// <summary>
+        /// 连接操作
+        /// </summary>
+        /// <param name="remoteIP"></param>
+        /// <param name="remotePort"></param>
+        void Connect(string remoteIP, int remotePort);
+        void Connect(IPEndPoint[] listRemoteEndPoints);
 
+        /// <summary>
+        /// SessionID
+        /// </summary>
+        uint Id { get; }
+
+        /// <summary>
+        /// 连接是否被激活
+        /// </summary>
+        bool IsActived { get; }
+
+        /// <summary>
+        /// 连接的Ping值
+        /// </summary>
+        ushort Ping { get; set; }
+
+        /// <summary>
+        /// 初始化成功后，可以获取本地EndPoint
+        /// </summary>
+        IPEndPoint LocalEndPoint { get; }
+
+        /// <summary>
+        /// 连接建立后，可以获取远端EndPoint
+        /// </summary>
+        IPEndPoint RemoteEndPoint { get; }
+
+        /// <summary>
+        /// 数据发送
+        /// 有可能是同步模式
+        /// 也可能是异步模式
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        bool Send(NetMessage msg);
+
+
+        /// <summary>
+        /// 无论是用IOCP，还是自己实现的IO模型
+        /// 都可能需要在网络线程与主线程之间【统一】同步数据
+        /// 当然只是可能，也不是必要的
+        /// 但是参照Apollo的设计，还是统一同步数据的
+        /// </summary>
         void Tick();
     }
 }

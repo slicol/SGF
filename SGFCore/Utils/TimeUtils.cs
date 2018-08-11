@@ -22,6 +22,7 @@ namespace SGF.Utils
 
 	public class TimeUtils
 	{
+     
 
 		readonly static DateTime DateTime_1970_01_01_08_00_00 = new DateTime(1970, 1, 1, 8, 0, 0);
 
@@ -282,5 +283,15 @@ namespace SGF.Utils
 		}
 
 
-	}
+	    public static double GetMillisecondsFromTicks(long ticks)
+	    {
+	        return ticks / 10000.0f;
+	    }
+
+	    public static double GetSecondsFromTicks(long ticks)
+	    {
+	        return (ticks / 10000.0f)/1000.0f;
+	    }
+
+    }
 }

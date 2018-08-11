@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and limitations under the License.
 */
 
+using System;
 using System.Collections.Generic;
-using SGF.Common;
+using MiniJSON.Safe;
 using SGF.Utils;
 
 namespace SGF.Server
@@ -26,40 +27,73 @@ namespace SGF.Server
         public int id;
         public string name;
         public string assembly;
+        public string ip;
         public int port;
+        public bool auto;
     }
 
     public class ServerConfig
     {
-        internal static string Namespace = "SGF.Server";
-        internal readonly static string Path = "./ServerConfig.json";
+        public static string Namespace = "SGF.Server";
+        internal readonly static string DefaultPath = "./ServerConfig.json";
 
         private readonly static MapList<int, ServerModuleInfo> MapServerModuleInfo = new MapList<int, ServerModuleInfo>();
 
+        public static void Load(string path = null)
+        {
+            MapServerModuleInfo.Clear();
+            if (string.IsNullOrEmpty(path))
+            {
+                path = DefaultPath;
+            }
+            ReadConfig(path);
+        }
 
         public static ServerModuleInfo GetServerModuleInfo(int id)
         {
             if (MapServerModuleInfo.Count == 0)
             {
-                ReadConfig();
+                ReadConfig(DefaultPath);
             }
 
             return MapServerModuleInfo[id];
         }
 
-        private static void ReadConfig()
+        public static void SetServerModuleInfo(ServerModuleInfo info)
+        {
+            MapServerModuleInfo[info.id] = info;
+        }
+
+        public static ServerModuleInfo[] GetServerModuleInfoList()
+        {
+            return MapServerModuleInfo.ToArray();
+        }
+
+        private static void ReadConfig(string path)
         {
             Debuger.Log();
-            string jsonStr = FileUtils.ReadString(Path);
-            var obj = MiniJSON.Json.Deserialize(jsonStr) as List<object>;
+            string jsonStr = FileUtils.ReadString(path);
+            List<object> obj = null;
+            try
+            {
+                obj = Json.Deserialize(jsonStr) as List<object>;
+            }
+            catch (Exception e)
+            {
+                Debuger.LogError("文件加载失败：{0}", path);
+                return;
+            }
+            
             for (int i = 0; i < obj.Count; i++)
             {
                 var infoJson = obj[i] as Dictionary<string, object>;
                 ServerModuleInfo info = new ServerModuleInfo();
-                info.id = (int)(long)infoJson["id"];
+                info.id = (int)infoJson["id"];
                 info.name = (string)infoJson["name"];
                 info.assembly = (string)infoJson["assembly"];
-                info.port = (int)(long)infoJson["port"];
+                info.ip = (string)infoJson["ip"];
+                info.port = (int)infoJson["port"];
+                info.auto = (bool)infoJson["auto"];
                 MapServerModuleInfo.Add(info.id, info);
             }
         }

@@ -1,8 +1,6 @@
 ﻿/*
  * Copyright (C) 2018 Slicol Tang. All rights reserved.
  * 
- * 网络模块
- * Network
  * 
  * Licensed under the MIT License (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -15,19 +13,23 @@
  * See the License for the specific language governing permissions and limitations under the License.
 */
 
+using System.IO;
 
-namespace SGF.Network.Core
+namespace SGF.Extension
 {
-    public enum NetErrorCode
+    public static class StreamExtension
     {
-        UnkownError = -1,
-        NoError = 0,
-        SocketError,
-        Timeout,
-        Disconnected,
-        SessionExpire,
-        DeserializeError,
-        ReconnectFailed
-        //不能超过SocketError的枚举值
+        public static long CopyTo(this Stream source, Stream destination)
+        {
+            byte[] buffer = new byte[2048];
+            int bytesRead;
+            long totalBytes = 0;
+            while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                destination.Write(buffer, 0, bytesRead);
+                totalBytes += bytesRead;
+            }
+            return totalBytes;
+        }
     }
 }

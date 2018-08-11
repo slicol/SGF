@@ -14,11 +14,9 @@
  * either express or implied. 
  * See the License for the specific language governing permissions and limitations under the License.
 */
+using SGF.Network.Core;
 
-
-
-
-namespace SGF.Network.Core
+namespace SGF.Network.General.Proto
 {
     public class NetMessage
     {
@@ -28,22 +26,30 @@ namespace SGF.Network.Core
         public ProtocolHead head = new ProtocolHead();
         public byte[] content;
 
-        public NetMessage Deserialize(NetBuffer buffer)
+        public uint Length{get { return head.dataSize + ProtocolHead.Length; } }
+
+        public bool Deserialize(NetBuffer buffer)
         {
-            head.Deserialize(buffer);
-            content = new byte[head.dataSize];
-            buffer.ReadBytes(content, 0, head.dataSize);
-            return this;
+            if (head.Deserialize(buffer))
+            {
+                if (buffer.BytesAvailable >= head.dataSize)
+                {
+                    content = new byte[head.dataSize];
+                    buffer.ReadBytes(content, 0, (int)head.dataSize);
+                    return true;
+                }
+            }
+            return false;
         }
 
         public NetBuffer Serialize(NetBuffer buffer)
         {
             head.Serialize(buffer);
-            buffer.WriteBytes(content, 0, head.dataSize);
+            buffer.WriteBytes(content, 0, (int)head.dataSize);
             return buffer;
         }
 
-        public NetMessage Deserialize(byte[] buffer, int size)
+        public bool Deserialize(byte[] buffer, int size)
         {
             lock (DefaultReader)
             {

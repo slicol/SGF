@@ -39,7 +39,7 @@ namespace SGF.Network.Core
 
         //===========================================================
         #region 构造与析构
-        public UdpSocket(AddressFamily family, bool enableBlockOnRecv)
+        public UdpSocket(AddressFamily family, bool enableBlockOnRecv = false)
         {
             m_EnableBlockOnRecv = enableBlockOnRecv;
             m_AddrFamily = family;
@@ -96,6 +96,8 @@ namespace SGF.Network.Core
         }
 
         public Socket SystemSocket { get { return m_SystemSocket; } }
+
+        public int Available { get { return m_SystemSocket.Available; } }
 
         #endregion
 
@@ -158,11 +160,6 @@ namespace SGF.Network.Core
 
             remoteEP = ip as IPEndPoint;
 
-            if (NetDebuger.IsPacketLoss())
-            {
-                return 0;
-            }
-
             return cnt;
         }
 
@@ -173,10 +170,6 @@ namespace SGF.Network.Core
         {
             int cnt = 0;
 
-            if (NetDebuger.IsPacketLoss())
-            {
-                return 0;
-            }
 
             //如果无法使用LocalSocket再使用SystemSocket
             if (cnt == 0)

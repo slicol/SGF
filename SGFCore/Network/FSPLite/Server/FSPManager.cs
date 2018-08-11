@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SGF.Common;
+
 using SGF.Extension;
 using SGF.Utils;
 

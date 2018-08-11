@@ -16,10 +16,9 @@
 */
 
 using System;
-using System.Text;
-using SGF.Event;
+using SGF.SEvent;
 
-namespace SGF
+namespace SGF.Utils
 {
 
 
@@ -30,8 +29,8 @@ namespace SGF
             Idle = 0,
             Inputing = 1
         }
-        public readonly static SGFEvent<string> onInputLine = new SGFEvent<string>();
-        public readonly static SGFEvent<ConsoleKey> onInputKey = new SGFEvent<ConsoleKey>();
+        public readonly static Signal<string> onInputLine = new Signal<string>();
+        public readonly static Signal<ConsoleKey> onInputKey = new Signal<ConsoleKey>();
 
         private static InputState ms_InputState = InputState.Idle;
         private static string ms_InputBuffer = "";

@@ -21,36 +21,47 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using SGF.Common;
+
 using SGF.Network.Core;
 using SGF.Utils;
 
 namespace SGF.Network.General.Server
 {
-    public class Gateway
+    public class KcpGateway : IGateway, ILogTag
     {
-        private MapList<uint, ISession> m_mapSession;
-        private Socket m_SystemSocket;
+        public string LOG_TAG { get; protected set; }
+        public IPEndPoint LocalEndPoint { get; private set; }
+        public static int SessionActiveTimeout = 5;
+        private MapList<uint, KcpSession> m_mapSession;
         private bool m_IsRunning = false;
-        private Thread m_ThreadRecv;
-        private byte[] m_RecvBufferTemp = new byte[4096];
         private ISessionListener m_listener;
         private int m_port;
+
+        private Socket m_socket = null;
+        private NetBufferWriter m_bufferReceive = null;
+        private Thread m_ThreadRecv;
+        private byte[] m_RecvBufferTemp = new byte[4096];
         private bool m_waitStart = false;
 
-        public void Init(int port, ISessionListener listener)
+
+        public KcpGateway(int port, ISessionListener listener)
         {
-            Debuger.Log("port:{0}", port);
+            LOG_TAG = "KcpGateway<" + port + ">";
+            this.Log("port:{0}", port);
+
+            m_bufferReceive = new NetBufferWriter();
+
             m_port = port;
             m_listener = listener;
-            m_mapSession = new MapList<uint, ISession>();
+
+            m_mapSession = new MapList<uint, KcpSession>();
 
             Start();
         }
 
         public void Clean()
         {
-            Debuger.Log();
+            this.Log();
             m_mapSession.Clear();
             Close();
         }
@@ -66,27 +77,86 @@ namespace SGF.Network.General.Server
                 sb.AppendLine("\t" + session.ToString());
             }
 
-            Debuger.LogWarning("\nGateway Sessions ({0}):\n{1}", m_mapSession.Count, sb);
+            this.LogWarning("\nGateway Sessions ({0}):\n{1}", m_mapSession.Count, sb);
 
         }
+
+        private static long m_lastSessionId = 0;
+        private uint NewSessionID()
+        {
+            return (uint)Interlocked.Increment(ref m_lastSessionId);
+        }
+
 
         private void Start()
         {
-            Debuger.LogWarning("");
+            this.LogWarning("");
 
-            m_waitStart = false;
             m_IsRunning = true;
 
-            m_SystemSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            m_SystemSocket.Bind(IPUtils.GetIPEndPointAny(AddressFamily.InterNetwork, m_port));
+            if (m_socket == null)
+            {
+                m_socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                m_socket.Bind(new IPEndPoint(IPAddress.Any, m_port));
+                LocalEndPoint = m_socket.LocalEndPoint as IPEndPoint;
+                m_port = LocalEndPoint.Port; ;
 
-            m_ThreadRecv = new Thread(Thread_Recv) { IsBackground = true };
-            m_ThreadRecv.Start();
+                m_ThreadRecv = new Thread(Thread_Recv) { IsBackground = true };
+                m_ThreadRecv.Start();
+            }
         }
+
+        private void DoReceiveInThread()
+        {
+            EndPoint remotePoint = IPUtils.GetIPEndPointAny(AddressFamily.InterNetwork, 0);
+            int cnt = m_socket.ReceiveFrom(m_RecvBufferTemp, m_RecvBufferTemp.Length, SocketFlags.None, ref remotePoint);
+
+            if (cnt > 0)
+            {
+                m_bufferReceive.Attach(m_RecvBufferTemp, cnt);
+                byte[] m_32b = new byte[4];
+                m_bufferReceive.ReadBytes(m_32b, 0, 4);
+                uint sid = BitConverter.ToUInt32(m_32b, 0);
+
+                lock (m_mapSession)
+                {
+                    KcpSession session = null;
+
+                    if (sid == 0)
+                    {
+                        //来自Client的第1个包，只能是鉴权包
+                        session = new KcpSession(NewSessionID(), m_listener);
+                        m_mapSession.Add(session.Id, session);
+                    }
+                    else
+                    {
+                        session = m_mapSession[sid];
+                    }
+
+
+                    if (session != null)
+                    {
+                        session.Active(m_socket, remotePoint as IPEndPoint);
+                        session.DoReceiveInGateway(m_RecvBufferTemp, cnt);
+                    }
+                    else
+                    {
+                        this.LogWarning("无效的包! sid:{0}", sid);
+                        //需要返回给客户端，Session无效了,直接返回一个Sid为0的包
+                        //当客户端收到包好，会抛出Session过期事件
+                        //因为正常情况下，客户端收到的Session肯定不为0
+                        m_socket.SendTo(new byte[4], remotePoint);
+                    }
+                }
+            }
+        }
+
+
+
 
         private void Close()
         {
-            Debuger.LogWarning("");
+            this.LogWarning("");
 
             m_IsRunning = false;
 
@@ -96,39 +166,23 @@ namespace SGF.Network.General.Server
                 m_ThreadRecv = null;
             }
 
-            if (m_SystemSocket != null)
+            if (m_socket != null)
             {
                 try
                 {
-                    m_SystemSocket.Shutdown(SocketShutdown.Both);
+                    m_socket.Shutdown(SocketShutdown.Both);
 
                 }
                 catch (Exception e)
                 {
-                    Debuger.LogWarning(e.Message + e.StackTrace);
+                    this.LogWarning(e.Message + e.StackTrace);
                 }
 
-                m_SystemSocket.Close();
-                m_SystemSocket = null;
+                m_socket.Close();
+                m_socket = null;
             }
         }
 
-        private void ReStart()
-        {
-            Debuger.LogWarning("");
-            Close();
-            m_waitStart = true;
-        }
-
-        public ISession GetSession(uint sid)
-        {
-            ISession session = null;
-            lock (m_mapSession)
-            {
-                session = m_mapSession[sid];
-            }
-            return session;
-        }
 
 
         //=================================================================================
@@ -172,75 +226,18 @@ namespace SGF.Network.General.Server
             Debuger.LogWarning("End!");
         }
 
-        private NetBufferReader m_RecvBufferTempReader = new NetBufferReader();
-
-        private void DoReceiveInThread()
-        {
-            EndPoint remotePoint = IPUtils.GetIPEndPointAny(AddressFamily.InterNetwork, 0);
-            int cnt = m_SystemSocket.ReceiveFrom(m_RecvBufferTemp, m_RecvBufferTemp.Length, SocketFlags.None, ref remotePoint);
-
-            if (cnt > 0)
-            {
-                m_RecvBufferTempReader.Attach(m_RecvBufferTemp, cnt);
-                byte[] m_32b = new byte[4];
-                m_RecvBufferTempReader.ReadBytes(m_32b, 0, 4);
-                uint sid = BitConverter.ToUInt32(m_32b, 0);
-                //uint sid = m_RecvBufferTempReader.ReadUInt();
-                
-
-                lock (m_mapSession)
-                {
-                    ISession session = null;
-
-                    if (sid == 0)
-                    {
-                        //来自Client的第1个包，只能是鉴权包
-                        sid = SessionID.NewID();
-                        session = new KCPSession(sid, HandleSessionSend, m_listener);
-                        m_mapSession.Add(session.id, session);
-                    }
-                    else
-                    {
-                        session = m_mapSession[sid];
-                    }
 
 
-                    if (session != null)
-                    {
-                        session.Active(remotePoint as IPEndPoint);
-                        session.DoReceiveInGateway(m_RecvBufferTemp, cnt);
-                    }
-                    else
-                    {
-                        Debuger.LogWarning("无效的包! sid:{0}", sid);
-                    }
-                }
-            }
-        }
-
-        private void HandleSessionSend(ISession session, byte[] bytes, int len)
-        {
-            if (m_SystemSocket != null)
-            {
-                m_SystemSocket.SendTo(bytes, 0, len, SocketFlags.None, session.remoteEndPoint);
-            }
-            else
-            {
-                Debuger.LogError("Socket已经关闭！");
-            }
-        }
-
-
-        private uint m_lastClearSessionTime = 0;
+        private int m_lastClearSessionTime = 0;
         public void Tick()
         {
             if (m_IsRunning)
             {
                 lock (m_mapSession)
                 {
-                    uint current = (uint)TimeUtils.GetTotalMillisecondsSince1970();
+                    int current = (int)TimeUtils.GetTotalMillisecondsSince1970();
 
-                    if (current - m_lastClearSessionTime > KCPSession.ActiveTimeout * 1000 / 2)
+                    if (current - m_lastClearSessionTime > SessionActiveTimeout * 1000 / 2)
                     {
                         m_lastClearSessionTime = current;
                         ClearNoActiveSession();
@@ -254,13 +251,6 @@ namespace SGF.Network.General.Server
                     }
                 }
             }
-            else
-            {
-                if (m_waitStart)
-                {
-                    Start();
-                }
-            }
         }
 
         private void ClearNoActiveSession()
@@ -272,10 +262,11 @@ namespace SGF.Network.General.Server
             for (int i = cnt - 1; i >= 0; i--)
             {
                 var session = list[i];
-                if (!session.IsActived())
+                if (!session.IsActived)
                 {
                     list.RemoveAt(i);
-                    dir.Remove(session.id);
+                    dir.Remove(session.Id);
+                    session.Clean();
                 }
             }
         }

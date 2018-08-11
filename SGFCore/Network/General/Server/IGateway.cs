@@ -1,8 +1,6 @@
 ﻿/*
  * Copyright (C) 2018 Slicol Tang. All rights reserved.
  * 
- * 封装Dictionary以提供简捷而安全的使用方式
- * Encapsulate Dictionary to provide simple and safe use
  * 
  * Licensed under the MIT License (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -15,24 +13,12 @@
  * See the License for the specific language governing permissions and limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-
-namespace SGF.Common
-{ 
-    public class DictionarySafe<TKey, TValue> : Dictionary<TKey, TValue> 
+namespace SGF.Network.General.Server
+{
+    public interface IGateway
     {
-        public new TValue this[TKey key]
-        {
-            set { base[key] = value; }
-            get
-            {
-                TValue value = default(TValue);
-                TryGetValue(key, out value);
-                return value;
-            }
-        }
-
-
+        void Clean();
+        void Dump();
+        void Tick();
     }
 }

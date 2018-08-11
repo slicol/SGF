@@ -15,7 +15,10 @@
 */
 
 
+using System;
+using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace SGF.Network
 {
@@ -25,6 +28,22 @@ namespace SGF.Network
         {
             return NetworkInterface.GetIsNetworkAvailable();
         }
-        
+
+        public static int GetAvaliablePort()
+        {
+            int port = 0;
+            try
+            {
+                var s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                s.Bind(new IPEndPoint(IPAddress.Any, 0));
+                port = (s.LocalEndPoint as IPEndPoint).Port;
+                s.Close();
+            }
+            catch (Exception e)
+            {
+            }
+
+            return port;
+        }
     }
 }

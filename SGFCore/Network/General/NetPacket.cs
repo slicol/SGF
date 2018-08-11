@@ -1,8 +1,6 @@
 ﻿/*
  * Copyright (C) 2018 Slicol Tang. All rights reserved.
  * 
- * 网络模块
- * Network
  * 
  * Licensed under the MIT License (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -15,19 +13,26 @@
  * See the License for the specific language governing permissions and limitations under the License.
 */
 
+using System;
 
-namespace SGF.Network.Core
+namespace SGF.Network.General
 {
-    public enum NetErrorCode
+    public class NetPacket
     {
-        UnkownError = -1,
-        NoError = 0,
-        SocketError,
-        Timeout,
-        Disconnected,
-        SessionExpire,
-        DeserializeError,
-        ReconnectFailed
-        //不能超过SocketError的枚举值
+        internal int SentSize;
+        public readonly byte[] Bytes;
+        
+        public NetPacket(byte[] bytes)
+        {
+            if (bytes == null) throw new ArgumentNullException("bytes");
+            this.Bytes = bytes;
+        }
+
+
+
+        public bool IsSent { get { return this.SentSize == Bytes.Length; } }
     }
+
+    
+
 }

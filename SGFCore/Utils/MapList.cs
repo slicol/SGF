@@ -17,14 +17,27 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 
-namespace SGF.Common
+namespace SGF.Utils
 {
     public class MapList<TKey, TValue>
     {
-        private Dictionary<TKey, TValue> m_map = new Dictionary<TKey, TValue>();
-        private List<TValue> m_list = new List<TValue>();
+        private Dictionary<TKey, TValue> m_map;
+        private List<TValue> m_list;
+
+        public MapList(int capacity)
+        {
+            m_map = new Dictionary<TKey, TValue>(capacity);
+            m_list = new List<TValue>(capacity);
+        }
+
+        public MapList()
+        {
+            m_map = new Dictionary<TKey, TValue>();
+            m_list = new List<TValue>();
+        }
 
         public List<TValue> AsList()
         {
@@ -34,6 +47,11 @@ namespace SGF.Common
         public Dictionary<TKey, TValue> AsDictionary()
         {
             return m_map;
+        }
+
+        public List<TValue> ToList()
+        {
+            return m_list.ToList();
         }
 
         public TValue[] ToArray()
@@ -89,6 +107,13 @@ namespace SGF.Common
             }
             return false;
         }
+
+        public bool RemoveAt(int index, TKey key)
+        {
+            m_list.RemoveAt(index);
+            return m_map.Remove(key);
+        }
+
 
 
         public void Clear()

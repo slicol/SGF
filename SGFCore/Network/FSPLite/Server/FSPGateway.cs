@@ -20,7 +20,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using SGF.Common;
+
 using SGF.Network.Core;
 using SGF.Utils;
 
