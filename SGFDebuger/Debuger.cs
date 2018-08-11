@@ -73,6 +73,31 @@ namespace SGF
         }
     }
 
+    public class SystemColorConsole : IDebugerConsole
+    {
+        public void Log(string msg, object context = null)
+        {
+            Console.WriteLine(msg);
+        }
+
+        public void LogWarning(string msg, object context = null)
+        {
+            var old = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(msg);
+            Console.ForegroundColor = old;
+        }
+
+        public void LogError(string msg, object context = null)
+        {
+            var old = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(msg);
+            Console.ForegroundColor = old;
+
+        }
+    }
+
 
     public interface ILogTag
     {
@@ -84,8 +109,10 @@ namespace SGF
         public static bool EnableLog = true;
         public static bool EnableLogVerbose = false;
         public static bool EnableTime = true;
+        public static bool EnableDate = false;
         public static bool EnableSave = false;
         public static bool EnableStack = false;
+        public static bool EnableErrorStack = true;
         public static string LogFileDir = "";
         public static string LogFileName = "";
         public static string Prefix = "> ";
@@ -327,14 +354,14 @@ namespace SGF
         {
             message = GetLogText(GetLogCaller(true), message);
             Internal_LogError(Prefix + message);
-            LogToFile("[E]" + message, true);
+            LogToFile("[E]" + message, EnableErrorStack);
         }
 
         public static void LogError(object message)
         {
             message = GetLogText(GetLogCaller(true), message.ToString());
             Internal_LogError(Prefix + message);
-            LogToFile("[E]" + message, true);
+            LogToFile("[E]" + message, EnableErrorStack);
         }
 
 
@@ -342,7 +369,7 @@ namespace SGF
         {
             string message = GetLogText(GetLogCaller(true), string.Format(format, args));
             Internal_LogError(Prefix + message);
-            LogToFile("[E]" + message, true);
+            LogToFile("[E]" + message, EnableErrorStack);
         }
 
 
@@ -350,7 +377,7 @@ namespace SGF
         {
             message = GetLogText(GetLogTag(obj), GetLogCaller(), message);
             Internal_LogError(Prefix + message);
-            LogToFile("[E]" + message, true);
+            LogToFile("[E]" + message, EnableErrorStack);
         }
 
 
@@ -358,7 +385,7 @@ namespace SGF
         {
             string message = GetLogText(GetLogTag(obj), GetLogCaller(), string.Format(format, args));
             Internal_LogError(Prefix + message);
-            LogToFile("[E]" + message, true);
+            LogToFile("[E]" + message, EnableErrorStack);
         }
         #endregion
 
@@ -369,7 +396,12 @@ namespace SGF
         private static string GetLogText(string tag, string methodName, string message)
         {
             string str = "";
-            if (Debuger.EnableTime)
+            if (Debuger.EnableDate)
+            {
+                DateTime now = DateTime.Now;
+                str = now.ToString("yyyy-MM-dd HH:mm:ss.fff") + " ";
+            }
+            else if (Debuger.EnableTime)
             {
                 DateTime now = DateTime.Now;
                 str = now.ToString("HH:mm:ss.fff") + " ";
@@ -382,7 +414,12 @@ namespace SGF
         private static string GetLogText(string caller, string message)
         {
             string str = "";
-            if (Debuger.EnableTime)
+            if (Debuger.EnableDate)
+            {
+                DateTime now = DateTime.Now;
+                str = now.ToString("yyyy-MM-dd HH:mm:ss.fff") + " ";
+            }
+            else if (Debuger.EnableTime)
             {
                 DateTime now = DateTime.Now;
                 str = now.ToString("HH:mm:ss.fff") + " ";
