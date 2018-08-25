@@ -34,6 +34,7 @@ namespace SGF.Network.General.Client
     public class NetManager
     {
         public Signal onDisconnected { get; private set; }
+        public Signal onConnectFailed { get; private set; }
         private IConnection m_conn;
         private uint m_token;
         private RPCManager m_rpc;
@@ -47,6 +48,7 @@ namespace SGF.Network.General.Client
                 var conn = new TcpConnection(localPort, null, 3);
                 m_conn = conn;
                 conn.onDisconnected.AddListener(OnDisconnected);
+                conn.onConnectError.AddListener(OnConnectError);
             }
             else if (connType == ConnectionType.UDP)
             {
@@ -62,6 +64,8 @@ namespace SGF.Network.General.Client
             }
 
             onDisconnected = new Signal();
+            onConnectFailed = new Signal();
+
             m_rpc = new RPCManager(m_conn);
             m_rpc.Init();
         }
@@ -92,6 +96,14 @@ namespace SGF.Network.General.Client
         private void OnDisconnected(IConnection  conn)
         {
             onDisconnected.Invoke();
+        }
+
+        private void OnConnectError(IConnection conn, int code)
+        {
+            if(code == (int)NetErrorCode.ReconnectFailed)
+            {
+                onConnectFailed.Invoke();
+            }
         }
 
         public void Dump()
@@ -261,7 +273,7 @@ namespace SGF.Network.General.Client
             msg.head.cmd = cmd;
             msg.head.token = m_token;
             msg.content = PBSerializer.NSerialize(req);
-            msg.head.dataSize = (ushort)msg.content.Length;
+            msg.head.dataSize = (uint)msg.content.Length;
 
             m_conn.Send(msg);
             return index;
@@ -277,7 +289,7 @@ namespace SGF.Network.General.Client
             msg.head.cmd = cmd;
             msg.head.token = m_token;
             msg.content = PBSerializer.NSerialize(req);
-            msg.head.dataSize = (ushort)msg.content.Length;
+            msg.head.dataSize = (uint)msg.content.Length;
 
             m_conn.Send(msg);
         }
@@ -291,7 +303,7 @@ namespace SGF.Network.General.Client
             msgobj.head.cmd = cmd;
             msgobj.head.token = m_token;
             msgobj.content = PBSerializer.NSerialize(msg);
-            msgobj.head.dataSize = (ushort)msgobj.content.Length;
+            msgobj.head.dataSize = (uint)msgobj.content.Length;
 
             m_conn.Send(msgobj);
         }
@@ -402,7 +414,7 @@ namespace SGF.Network.General.Client
                 {
                     var helper = list[i];
                     float dt = curTime - helper.timestamp;
-                    if (dt >= helper.timeout)
+                    if (dt >= helper.timeout && helper.timeout > 0)
                     {
                         m_listRspListener.Remove(helper.index);
                         if (helper.onErr != null)

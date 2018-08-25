@@ -90,7 +90,7 @@ namespace SGF.Network.General.Server
 
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
-            msg.head.dataSize = (ushort)buffer.Length;
+            msg.head.dataSize = (uint)buffer.Length;
             msg.content = buffer;
             
             m_currInvokingSession.Send(msg);
@@ -109,7 +109,7 @@ namespace SGF.Network.General.Server
 
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
-            msg.head.dataSize = (ushort)buffer.Length;
+            msg.head.dataSize = (uint)buffer.Length;
             msg.content = buffer;
 
             m_currInvokingSession.Send(msg);
@@ -127,7 +127,7 @@ namespace SGF.Network.General.Server
 
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
-            msg.head.dataSize = (ushort)buffer.Length;
+            msg.head.dataSize = (uint)buffer.Length;
             msg.content = buffer;
             
             session.Send(msg);
@@ -146,7 +146,7 @@ namespace SGF.Network.General.Server
 
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
-            msg.head.dataSize = (ushort)buffer.Length;
+            msg.head.dataSize = (uint)buffer.Length;
             msg.content = buffer;
             
             for (int i = 0; i < listSession.Length; i++)

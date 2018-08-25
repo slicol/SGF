@@ -334,7 +334,7 @@ namespace SGF.Network.General.Server
             msgobj.head.token = 0;
             msgobj.head.sid = 0;
             msgobj.content = PBSerializer.NSerialize(msg);
-            msgobj.head.dataSize = (ushort)msgobj.content.Length;
+            msgobj.head.dataSize = (uint)msgobj.content.Length;
 
             NetBuffer bufferSend = new NetBuffer(new byte[msgobj.Length]);
             msgobj.Serialize(bufferSend);

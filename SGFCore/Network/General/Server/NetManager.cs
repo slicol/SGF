@@ -233,7 +233,7 @@ namespace SGF.Network.General.Server
             msgobj.head.cmd = cmd;
             msgobj.head.token = session.AuthToken;
             msgobj.content = PBSerializer.NSerialize(msg);
-            msgobj.head.dataSize = (ushort)msgobj.content.Length;
+            msgobj.head.dataSize = (uint)msgobj.content.Length;
 
             session.Send(msgobj);
         }

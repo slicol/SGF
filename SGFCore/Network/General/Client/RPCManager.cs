@@ -99,7 +99,7 @@ namespace SGF.Network.General.Client
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
             msg.head.token = m_token;
-            msg.head.dataSize = (ushort)buffer.Length;
+            msg.head.dataSize = (uint)buffer.Length;
             msg.content = buffer;
 
             m_conn.Send(msg);
@@ -121,7 +121,7 @@ namespace SGF.Network.General.Client
                 NetMessage msg = new NetMessage();
                 msg.head = new ProtocolHead();
                 msg.head.token = m_token;
-                msg.head.dataSize = (ushort)buffer.Length;
+                msg.head.dataSize = (uint)buffer.Length;
                 msg.content = buffer;
                 
                 m_conn.Send(msg);
