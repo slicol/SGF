@@ -91,15 +91,28 @@ namespace SGF.Unity.UI
         }
 
 
+        private string GetShortUIName(string name)
+        {
+            int i = name.LastIndexOf("/");
+            if(i < 0) i = name.LastIndexOf("\\");
+            if (i < 0) return name;
+            return name.Substring(i+1);
+        }
+
         public T Open<T>(string name, object arg = null, Type implType = null) where T : UIPanel
         {
-            T ui = UIRoot.Find<T>(name);
+            T ui = UIRoot.Find<T>(GetShortUIName(name));
             if (ui == null)
             {
                 ui = Load<T>(name, implType);
             }
             if (ui != null)
             {
+                if (m_listLoadedPanel.IndexOf(ui) < 0)
+                {
+                    m_listLoadedPanel.Add(ui);
+                }
+
                 ui.Open(arg);
                 UIRoot.Sort();
             }
@@ -134,12 +147,8 @@ namespace SGF.Unity.UI
 
                 if (ui != null)
                 {
-                    go.name = name;
+                    go.name = GetShortUIName(name);
                     UIRoot.AddChild(ui);
-                    if (m_listLoadedPanel.IndexOf(ui) < 0)
-                    {
-                        m_listLoadedPanel.Add(ui);
-                    }
                 }
                 else
                 {
@@ -157,9 +166,10 @@ namespace SGF.Unity.UI
 
         public UIPanel GetUI(string name)
         {
+            string shortname = GetShortUIName(name);
             for (int i = 0; i < m_listLoadedPanel.Count; i++)
             {
-                if (m_listLoadedPanel[i].name == name)
+                if (m_listLoadedPanel[i].name == shortname || m_listLoadedPanel[i].name == name)
                 {
                     return m_listLoadedPanel[i];
                 }
@@ -196,7 +206,11 @@ namespace SGF.Unity.UI
 
             if (m_currentPage != null)
             {
-                m_pageTrackStack.Push(m_currentPage);
+                if (m_currentPage.name != name)
+                {
+                    m_pageTrackStack.Push(m_currentPage);
+                }
+                
             }
 
             OpenPageWorker(name, arg, null);

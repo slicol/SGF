@@ -30,14 +30,29 @@ namespace SGF.Unity.UI
         private static void BindUIElement(MonoBehaviour parent, FieldInfo fi)
         {
             Transform element = parent.transform.Find(fi.Name);
+            string uiName = fi.Name;
             if (element == null)
             {
-                var uiName = fi.Name;
+                if (uiName.StartsWith("m_"))
+                {
+                    uiName = uiName.Substring(2);
+                    element = parent.transform.Find(uiName);
+                }
+                else if (uiName.StartsWith("_"))
+                {
+                    uiName = uiName.Substring(1);
+                    element = parent.transform.Find(uiName);
+                }
+            }
+
+            if (element == null)
+            {
                 var c = uiName[0];
                 c = Char.IsLower(c) ? Char.ToUpper(c) : Char.ToLower(c);
                 uiName = c + uiName.Substring(1);
                 element = parent.transform.Find(uiName);
             }
+
 
             if (element != null)
             {

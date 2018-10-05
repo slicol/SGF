@@ -660,4 +660,12 @@ public static class TransformExtensions
         }
     }
     #endregion
+
+
+    public static T FindComponent<T>(this Transform transform, string name)
+    {
+        var tmp = transform.Find(name);
+        if (tmp != null) return tmp.GetComponent<T>();
+        return default(T);
+    }
 }	

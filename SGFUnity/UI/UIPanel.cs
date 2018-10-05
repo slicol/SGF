@@ -14,6 +14,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using SGF.SEvent;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -26,6 +27,8 @@ namespace SGF.Unity.UI
 
         private int m_layer = UILayerDef.Unkown;
         public int Layer { get { return m_layer; } set { m_layer = value; } }
+
+        public bool AutoBindUIElement = false;
 
         [SerializeField]
         private AnimationClip m_openAniClip;
@@ -48,7 +51,10 @@ namespace SGF.Unity.UI
         void Awake()
         {
             LOG_TAG = this.GetType().Name;
-            UIElementBinder.BindAllUIElement(this);
+            if (AutoBindUIElement)
+            {
+                UIElementBinder.BindAllUIElement(this);
+            }
 
             OnAwake();
         }
@@ -218,6 +224,7 @@ namespace SGF.Unity.UI
             Transform target = this.transform.Find(controlName);
             if (target != null)
             {
+                UIEventTrigger.Get(target).onClickWithName -= listener;
                 UIEventTrigger.Get(target).onClickWithName += listener;
             }
             else
@@ -236,6 +243,7 @@ namespace SGF.Unity.UI
             Transform target = this.transform.Find(controlName);
             if (target != null)
             {
+                UIEventTrigger.Get(target).onClick -= listener;
                 UIEventTrigger.Get(target).onClick += listener;
             }
             else
@@ -255,6 +263,7 @@ namespace SGF.Unity.UI
         {
             if (target != null)
             {
+                UIEventTrigger.Get(target).onClick -= listener;
                 UIEventTrigger.Get(target).onClick += listener;
             }
         }

@@ -21,10 +21,15 @@ namespace SGF.Unity.UI.UILib.Control
 {
 	public class UIControl:MonoBehaviour
 	{
-		protected virtual void Awake()
+	    public bool AutoBindUIElement = false;
+
+        protected virtual void Awake()
 		{
-		    UIElementBinder.BindAllUIElement(this);
-        }
+		    if (AutoBindUIElement)
+		    {
+		        UIElementBinder.BindAllUIElement(this);
+		    }
+		}
 
 		public virtual void SetData(object data)
 		{ 
