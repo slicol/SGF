@@ -284,7 +284,7 @@ namespace SGF.Network.General.Client
 
                 if (cnt > 0)
                 {
-                    if (!m_socket.Equals(remotePoint))
+                    if (!RemoteEndPoint.Equals(remotePoint))
                     {
                         Debuger.LogVerbose("收到非目标服务器的数据！");
                         return;
