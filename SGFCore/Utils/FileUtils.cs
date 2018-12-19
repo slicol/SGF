@@ -27,7 +27,7 @@ namespace SGF.Utils
 {
     public class FileUtils
     {
-        public static byte[] ReadFile(string fullpath)
+        public static byte[] ReadFile(string fullpath, int readsize = 0)
         {
             byte[] buffer = null;
             if (File.Exists(fullpath))
@@ -36,7 +36,14 @@ namespace SGF.Utils
                 try
                 {
                     fs = new FileStream(fullpath, FileMode.Open, FileAccess.Read);
-                    buffer = new byte[fs.Length];
+                    if (readsize == 0 || readsize >= fs.Length)
+                    {
+                        buffer = new byte[fs.Length];
+                    }
+                    else
+                    {
+                        buffer = new byte[readsize];
+                    }
                     fs.Read(buffer, 0, buffer.Length);
                 }
                 catch (Exception e)
@@ -200,20 +207,24 @@ namespace SGF.Utils
                 for (int i = 0; i < len; i++)
                 {
                     FileInfo f = files[i];
-
+                    bool ignored = false;
                     if (listIgnoredSuffix != null)
                     {
                         int lenIgnored = listIgnoredSuffix.Length;
                         for (int j = 0; j < lenIgnored; j++)
                         {
-                            if (f.FullName.EndsWith(listIgnoredSuffix[i]))
+                            if (f.FullName.EndsWith(listIgnoredSuffix[j]))
                             {
-                                continue;
+                                ignored = true;
+                                break;
                             }
                         }
                     }
 
-                    result.Add(f);
+                    if (!ignored)
+                    {
+                        result.Add(f);
+                    }
                 }
             }
 
