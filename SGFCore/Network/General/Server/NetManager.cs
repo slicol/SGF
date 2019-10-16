@@ -118,27 +118,22 @@ namespace SGF.Network.General.Server
 
         public void OnReceive(ISession session, NetMessage msg)
         {
-            if (session.AuthToken != 0)
+            if (session.AuthToken == msg.head.token)
             {
-                if (session.AuthToken == msg.head.token)
+                if (msg.head.cmd == 0)
                 {
-                    if (msg.head.cmd == 0)
-                    {
-                        RPCMessage rpcmsg = PBSerializer.NDeserialize<RPCMessage>(msg.content);
-                        m_rpc.OnReceive(session, rpcmsg);
-                    }
-                    else
-                    {
-                        HandlePBMessage(session, msg);
-                    }
+                    RPCMessage rpcmsg = PBSerializer.NDeserialize<RPCMessage>(msg.content);
+                    m_rpc.OnReceive(session, rpcmsg);
                 }
                 else
                 {
-                    Debuger.LogWarning("收到消息的Token与Session的Token不一致！session.token:{0}, msg.token:{1}", session.AuthToken, msg.head.token);
+                    HandlePBMessage(session, msg);
                 }
             }
             else
             {
+                Debuger.LogWarning("收到消息的Token与Session的Token不一致！session.token:{0}, msg.token:{1}", session.AuthToken, msg.head.token);
+
                 if (m_authCmd == 0 || msg.head.cmd == m_authCmd)
                 {
                     HandlePBMessage(session, msg);
@@ -148,6 +143,7 @@ namespace SGF.Network.General.Server
                     Debuger.LogWarning("收到未鉴权的消息! cmd:{0}", msg.head.cmd);
                 }
             }
+            
         }
 
         public void OnDisconnected(ISession session)

@@ -67,13 +67,13 @@ namespace SGF.Network.General.Server
                 }
                 else
                 {
-                    Debuger.LogWarning("参数数量不一致！");
+                    Debuger.LogWarning("参数数量不一致:{0},{1}<->{2}", rpcmsg.name, args.Length, paramInfo.Length);
                 }
 
             }
             else
             {
-                Debuger.LogWarning("RPC不存在！");
+                Debuger.LogWarning("RPC不存在:{0}", rpcmsg.name);
             }
         }
 
