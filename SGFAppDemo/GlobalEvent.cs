@@ -1,4 +1,4 @@
-﻿using SGF.Event;
+﻿using SGF.SEvent;
 
 namespace SGFAppDemo
 {
@@ -9,8 +9,8 @@ namespace SGFAppDemo
     /// </summary>
     public static class GlobalEvent
     {
-        public static SGFEvent onVersionUpdateComplete = new SGFEvent();
-        public static SGFEvent onFixedUpdate = new SGFEvent();
-        public static SGFEvent<float> onUpdate = new SGFEvent<float>();
+        public static Signal onVersionUpdateComplete = new Signal();
+        public static Signal onFixedUpdate = new Signal();
+        public static Signal<float> onUpdate = new Signal<float>();
     }
 }

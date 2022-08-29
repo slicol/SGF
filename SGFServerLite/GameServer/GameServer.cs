@@ -1,4 +1,5 @@
 ﻿using SGF.IPCWork;
+using SGF.Network.General;
 using SGF.Network.General.Server;
 using SGF.Server;
 
@@ -15,7 +16,7 @@ namespace SGFServerDemo.GameServer
             base.Start();
 
             m_net = new NetManager();
-            m_net.Init(2939);
+            m_net.Init(ConnectionType.RUDP, 2939);
 
             m_ipc = new IPCManager();
             m_ipc.Init(id);

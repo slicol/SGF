@@ -1,0 +1,10 @@
+﻿.vs
+*.pdb
+*.mdb
+SGFAppCommon/obj
+SGFAppDemo/obj
+SGFAppILRScript/obj
+SGFCore/obj
+SGFDebuger/obj
+SGFServerLite/obj
+SGFUnity/obj

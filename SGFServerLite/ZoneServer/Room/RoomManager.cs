@@ -19,7 +19,8 @@ namespace SGFServerDemo.ZoneServer
         public void Init(ServerContext context)
         {
             m_net = context.net;
-            m_net.RegisterRPCListener(this);
+            //m_net.RegisterRPCListener(this);
+            m_net.Rpc.RegisterListener(this);
         }
 
         public void Dump()
@@ -47,7 +48,7 @@ namespace SGFServerDemo.ZoneServer
             }
             RoomListData data = new RoomListData();
             data.rooms = list;
-            m_net.Return(data);
+            m_net.Rpc.Return(data);
         }
 
         [RPCRequest]
@@ -58,7 +59,7 @@ namespace SGFServerDemo.ZoneServer
             room.Create(userId, ud.name, session, roomName);
             m_listRoom.Add(room);
 
-            m_net.Return(room.data);
+            m_net.Rpc.Return(room.data);
         }
 
         [RPCRequest]
@@ -71,11 +72,11 @@ namespace SGFServerDemo.ZoneServer
                 
                 room.AddPlayer(userId, ud.name, session);
                 ISession[] listSession = room.GetSessionList();
-                m_net.Invoke(listSession,"NotifyRoomUpdate", room.data);
+                m_net.Rpc.Invoke(listSession,"NotifyRoomUpdate", room.data);
             }
             else
             {
-                m_net.ReturnError("房间不存在", (int)roomId);
+                m_net.Rpc.ReturnError("房间不存在", (int)roomId);
             }
         }
 
@@ -91,7 +92,7 @@ namespace SGFServerDemo.ZoneServer
                 if (room.GetPlayerCount() > 0)
                 {
                     ISession[] listSession = room.GetSessionList();
-                    m_net.Invoke(listSession, "NotifyRoomUpdate", room.data);
+                    m_net.Rpc.Invoke(listSession, "NotifyRoomUpdate", room.data);
                 }
             }
         }
@@ -104,11 +105,11 @@ namespace SGFServerDemo.ZoneServer
             {
                 room.SetReady(userId, ready);
                 ISession[] listSession = room.GetSessionList();
-                m_net.Invoke(listSession, "NotifyRoomUpdate", room.data);
+                m_net.Rpc.Invoke(listSession, "NotifyRoomUpdate", room.data);
             }
             else
             {
-                m_net.ReturnError("房间不存在", (int)roomId);
+                m_net.Rpc.ReturnError("房间不存在", (int)roomId);
             }
         }
 
@@ -125,13 +126,13 @@ namespace SGFServerDemo.ZoneServer
                     {
                         FSPParam param = room.GetGameStartParam();
                         ISession[] listSession = room.GetSessionList();
-                        m_net.Invoke(listSession, "NotifyGameStart", param);
+                        m_net.Rpc.Invoke(listSession, "NotifyGameStart", param);
                     }
                 }
             }
             else
             {
-                m_net.ReturnError("房间不存在", (int)roomId);
+                m_net.Rpc.ReturnError("房间不存在", (int)roomId);
             }
         }
 

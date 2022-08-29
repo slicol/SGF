@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using SGF.Common;
 using SGF.Extension;
 using SGF.Network.FSPLite;
 using SGF.Network.General.Server;
+using SGF.Utils;
 using SGFAppDemo.Common.Data;
 
 
@@ -68,7 +68,7 @@ namespace SGFServerDemo.ZoneServer
                 data = new PlayerData();
                 m_data.players.Add(data);
                 data.id = (uint)m_data.players.Count;
-                data.sid = session.id;
+                data.sid = session.Id;
             }
             data.isReady = false;
             data.userId = userId;

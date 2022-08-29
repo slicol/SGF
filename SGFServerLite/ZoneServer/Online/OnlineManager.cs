@@ -1,17 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using SGF;
-using SGF.Common;
 using SGF.Network.Core;
 using SGF.Network.Core.RPCLite;
+using SGF.Network.General.Proto;
 using SGF.Network.General.Server;
 using SGF.Time;
 using SGF.Utils;
 using SGFAppDemo.Common.Data;
 using SGFAppDemo.Common.Proto;
-
-
-
 
 namespace SGFServerDemo.ZoneServer
 {
@@ -36,8 +33,7 @@ namespace SGFServerDemo.ZoneServer
             m_net.AddListener<LoginReq>(ProtoCmd.LoginReq, OnLoginRequest);
             m_net.AddListener<HeartBeatReq>(ProtoCmd.HeartBeatReq, OnHeartBeatRequest);
 
-            
-            m_net.RegisterRPCListener(this);
+            m_net.Rpc.RegisterListener(this);
             m_mapUserData = new MapList<uint, UserData>();
         }
 
@@ -57,9 +53,9 @@ namespace SGFServerDemo.ZoneServer
 
 
 
-        private void OnLoginRequest(ISession session, uint index, LoginReq req)
+        private void OnLoginRequest(ISession session, ProtocolHead head, LoginReq req)
         {
-            Debuger.Log("session:{0}, index:{1}, name:{2}", session.id, index, req.name);
+            Debuger.Log("session:{0}, index:{1}, name:{2}", session.Id, head.index, req.name);
             bool success = false;
 
             UserData ud = GetUserData(req.name);
@@ -67,10 +63,11 @@ namespace SGFServerDemo.ZoneServer
             {
                 //正常登录
                 //这里简单地使用SessionId作为UserId
-                ud = CreateUserData(session.id, req.name);
+                ud = CreateUserData(session.Id, req.name);
                 ud.svrdata.online = true;
                 ud.svrdata.lastHeartBeatTime = (uint)TimeUtils.GetTotalSecondsSince1970();
-                session.SetAuth(ud.id);
+                //session.SetAuth(ud.id);
+                session.AuthToken = ud.id;
                 success = true;
             }
             else
@@ -80,7 +77,8 @@ namespace SGFServerDemo.ZoneServer
                     //重新登录
                     ud.svrdata.online = true;
                     ud.svrdata.lastHeartBeatTime = (uint)TimeUtils.GetTotalSecondsSince1970();
-                    session.SetAuth(ud.id);
+                    //session.SetAuth(ud.id);
+                    session.AuthToken = ud.id;
                     success = true;
 
                 }
@@ -92,7 +90,8 @@ namespace SGFServerDemo.ZoneServer
                         //如果该名字已经离线，则可以占用
                         ud.svrdata.online = true;
                         ud.svrdata.lastHeartBeatTime = (uint)TimeUtils.GetTotalSecondsSince1970();
-                        session.SetAuth(ud.id);
+                        //session.SetAuth(ud.id);
+                        session.AuthToken = ud.id;
                         success = true;
                     }
                 }
@@ -103,30 +102,32 @@ namespace SGFServerDemo.ZoneServer
                 LoginRsp rsp = new LoginRsp();
                 rsp.ret = ReturnCode.Success;
                 rsp.userdata = ud;
-                m_net.Send(session, index, ProtoCmd.LoginRsp, rsp);
+
+                m_net.Send(session, head, ProtoCmd.LoginRsp, rsp);
+                
             }
             else
             {
                 LoginRsp rsp = new LoginRsp();
                 rsp.ret = new ReturnCode(1, "名字已经被占用了！");
-                m_net.Send(session, index, ProtoCmd.LoginRsp, rsp);
+                m_net.Send(session, head, ProtoCmd.LoginRsp, rsp);
             }
         }
 
 
 
-        private void OnHeartBeatRequest(ISession session, uint index, HeartBeatReq req)
+        private void OnHeartBeatRequest(ISession session, ProtocolHead head, HeartBeatReq req)
         {
-            UserData ud = GetUserData(session.uid);
+            UserData ud = GetUserData(session.Id);
             if (ud != null)
             {
                 ud.svrdata.lastHeartBeatTime = (uint)TimeUtils.GetTotalSecondsSince1970();
-                
-                session.ping = req.ping;
+
+                session.Ping = req.ping;
                 HeartBeatRsp rsp = new HeartBeatRsp();
                 rsp.ret = ReturnCode.Success;
                 rsp.timestamp = req.timestamp;
-                m_net.Send(session, index, ProtoCmd.HeartBeatRsp, rsp);
+                m_net.Send(session, head, ProtoCmd.HeartBeatRsp, rsp);
             }
             else
             {
@@ -139,8 +140,9 @@ namespace SGFServerDemo.ZoneServer
         [RPCRequest]
         private void Logout(ISession session)
         {
-            OnlineManager.Instance.ReleaseUserData(session.uid);
-            m_net.Return();
+            
+            OnlineManager.Instance.ReleaseUserData(session.Id);
+            m_net.Rpc.Return();
         }
 
         public UserData CreateUserData(uint id, string name)

@@ -1,5 +1,6 @@
 ﻿using SGF;
 using SGF.Extension;
+using SGF.Network.General;
 using SGF.Network.General.Client;
 using SGFAppDemo.Common.Data;
 using SGFAppDemo.Common.Proto;
@@ -17,8 +18,11 @@ namespace SGFAppDemo.Services.Online
         public void Init()
         {
             m_net = new NetManager();
-            m_net.Init(typeof(KCPConnection), (int)ConnID.ZoneServer,0);
-            m_net.RegisterRPCListener(this);
+            //m_net.Init(typeof(KcpConnection), (int)ConnID.ZoneServer,0);
+            //m_net.RegisterRPCListener(this);
+
+            m_net.Init(ConnectionType.RUDP, 0);
+            m_net.Rpc.RegisterListener(this);
 
             m_heartbeat = new HeartBeatHandler();
             m_heartbeat.Init(m_net);
@@ -30,7 +34,8 @@ namespace SGFAppDemo.Services.Online
             {
                 m_net.Connect("111.230.116.185", 4540);
                 //m_net.Connect("127.0.0.1", 4540);
-                m_connected = m_net.Connected;
+                //m_connected = m_net.Connected;
+                m_connected = m_net.IsConnected;
             }
         }
 
@@ -46,7 +51,8 @@ namespace SGFAppDemo.Services.Online
             LoginReq req = new LoginReq();
             req.name = username;
 
-            m_net.Send<LoginReq, LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
+            //m_net.Send<LoginReq, LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
+            m_net.Send<LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
         }
 
         public void Logout()
@@ -54,7 +60,8 @@ namespace SGFAppDemo.Services.Online
             m_heartbeat.Stop();
             if (m_mainUserData != null)
             {
-                m_net.Invoke("Logout");
+                //m_net.Invoke("Logout");
+                m_net.Rpc.Invoke("Logout");
             }
             m_mainUserData = null;
         }
@@ -64,7 +71,7 @@ namespace SGFAppDemo.Services.Online
             Debuger.Log();
         }
 
-        private void OnLoginRsp(LoginRsp rsp)
+        private void OnLoginRsp(uint index, LoginRsp rsp)
         {
             if (rsp.ret.code == 0)
             {

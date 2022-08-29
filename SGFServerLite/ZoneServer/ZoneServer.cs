@@ -1,8 +1,10 @@
 ﻿using System;
 using SGF;
 using SGF.IPCWork;
+using SGF.Network.General;
 using SGF.Network.General.Server;
 using SGF.Server;
+using SGF.Utils;
 
 namespace SGFServerDemo.ZoneServer
 {
@@ -19,7 +21,7 @@ namespace SGFServerDemo.ZoneServer
             base.Start();
 
             m_net = new NetManager();
-            m_net.Init(4540);
+            m_net.Init(ConnectionType.RUDP, 4540);
 
             m_ipc = new IPCManager();
             m_ipc.Init(id);

@@ -6,6 +6,7 @@ using SGF.Module;
 using SGF.Network.Core;
 using SGF.Network.Core.RPCLite;
 using SGF.Network.FSPLite;
+using SGF.Utils;
 using SGFAppDemo.Common.Data;
 using SGFAppDemo.Services;
 
@@ -29,7 +30,7 @@ namespace SGFAppDemo.Modules
             Console.WriteLine("命令格式：RoomReady %ready%");
             ConsoleInput.onInputLine.AddListener(OnInputLine);
 
-            OnlineManager.Instance.Net.RegisterRPCListener(this);
+            OnlineManager.Instance.Net.Rpc.RegisterListener(this);
         }
 
 
@@ -37,7 +38,7 @@ namespace SGFAppDemo.Modules
         {
             if (line == "ShowRoomList")
             {
-                OnlineManager.Instance.Net.Invoke("GetRoomList");
+                OnlineManager.Instance.Net.Rpc.Invoke("GetRoomList");
             }
             else if(line.StartsWith("CreateRoom"))
             {
@@ -46,7 +47,7 @@ namespace SGFAppDemo.Modules
                 {
                     UserData ud = OnlineManager.Instance.MainUserData;
                     string name = args[1];
-                    OnlineManager.Instance.Net.Invoke("CreateRoom", ud.id, name);
+                    OnlineManager.Instance.Net.Rpc.Invoke("CreateRoom", ud.id, name);
                 }
                 else
                 {
@@ -61,7 +62,7 @@ namespace SGFAppDemo.Modules
                     UserData ud = OnlineManager.Instance.MainUserData;
                     uint id = uint.Parse(args[1]);
                     
-                    OnlineManager.Instance.Net.Invoke("JoinRoom", ud.id, id);
+                    OnlineManager.Instance.Net.Rpc.Invoke("JoinRoom", ud.id, id);
                     
                 }
                 else
@@ -72,7 +73,7 @@ namespace SGFAppDemo.Modules
             else if (line == "ExitRoom")
             {
                 UserData ud = OnlineManager.Instance.MainUserData;
-                OnlineManager.Instance.Net.Invoke("ExitRoom", ud.id, m_currRoom.id);
+                OnlineManager.Instance.Net.Rpc.Invoke("ExitRoom", ud.id, m_currRoom.id);
             }
             else if (line.StartsWith("RoomReady"))
             {
@@ -81,7 +82,7 @@ namespace SGFAppDemo.Modules
                 {
                     bool ready = args[1] == "true";
                     UserData ud = OnlineManager.Instance.MainUserData;
-                    OnlineManager.Instance.Net.Invoke("RoomReady", ud.id, m_currRoom.id, ready);
+                    OnlineManager.Instance.Net.Rpc.Invoke("RoomReady", ud.id, m_currRoom.id, ready);
                 }
                 else
                 {
@@ -91,7 +92,7 @@ namespace SGFAppDemo.Modules
             else if (line == "StartGame")
             {
                 UserData ud = OnlineManager.Instance.MainUserData;
-                OnlineManager.Instance.Net.Invoke("StartGame", ud.id, m_currRoom.id);
+                OnlineManager.Instance.Net.Rpc.Invoke("StartGame", ud.id, m_currRoom.id);
             }
 
         }

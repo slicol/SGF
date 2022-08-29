@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using SGF;
-using SGF.Common;
 using SGF.Extension;
 using SGF.Module;
 using SGF.Network.Core;
 using SGF.Network.Core.RPCLite;
+using SGF.Network.General;
 using SGF.Network.General.Client;
 using SGF.Time;
 using SGF.Utils;
@@ -31,8 +31,11 @@ namespace SGFAppDemo.Services
         public void Init()
         {
             m_net = new NetManager();
-            m_net.Init(typeof(KCPConnection), (int)ConnID.ZoneServer,0);
-            m_net.RegisterRPCListener(this);
+
+            //m_net.Init(typeof(KCPConnection), (int)ConnID.ZoneServer,0);
+            //m_net.RegisterRPCListener(this);
+            m_net.Init(ConnectionType.RUDP, 0);
+            m_net.Rpc.RegisterListener(this);
 
             GlobalEvent.onUpdate.AddListener(OnUpdate);
             ConsoleInput.onInputKey.AddListener(OnInputKey);
@@ -92,7 +95,8 @@ namespace SGFAppDemo.Services
             {
                 m_net.Connect("111.230.116.185", 4540);
                 //m_net.Connect("127.0.0.1", 4540);
-                m_connected = m_net.Connected;
+                //m_connected = m_net.Connected;
+                m_connected = m_net.IsConnected;
             }
         }
 
@@ -110,7 +114,8 @@ namespace SGFAppDemo.Services
             req.name = username;
             req.id = 0;
 
-            m_net.Send<LoginReq, LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
+            //m_net.Send<LoginReq, LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
+            m_net.Send<LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
         }
 
         private void ReLogin()
@@ -121,10 +126,11 @@ namespace SGFAppDemo.Services
             req.name = m_mainUserData.name;
             req.id = m_mainUserData.id;
 
-            m_net.Send<LoginReq, LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
+            //m_net.Send<LoginReq, LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
+            m_net.Send<LoginRsp>(ProtoCmd.LoginReq, req, OnLoginRsp);
         }
 
-        private void OnLoginRsp(LoginRsp rsp)
+        private void OnLoginRsp(uint index, LoginRsp rsp)
         {
             if (rsp.ret.code == 0)
             {
@@ -149,7 +155,8 @@ namespace SGFAppDemo.Services
 
             if (m_mainUserData != null)
             {
-                m_net.Invoke("Logout");
+                //m_net.Invoke("Logout");
+                m_net.Rpc.Invoke("Logout");
             }
             m_mainUserData = null;
         }

@@ -1,8 +1,8 @@
 ﻿using SGF;
-using SGF.Event;
 using SGF.MathLite;
 using SGF.Network.Core;
 using SGF.Network.General.Client;
+using SGF.SEvent;
 using SGF.Time;
 using SGF.Utils;
 using SGFAppDemo.Common.Proto;
@@ -12,7 +12,7 @@ namespace SGFAppDemo.Services.Online
     public class HeartBeatHandler
     {
         private NetManager m_net;
-        public SGFEvent onTimeout = new SGFEvent();
+        public Signal onTimeout = new Signal();
         private float m_lastHeartBeatTime = 0;
         private uint m_ping = 0;
 
@@ -42,11 +42,13 @@ namespace SGFAppDemo.Services.Online
                 HeartBeatReq req = new HeartBeatReq();
                 req.ping = (ushort)m_ping;
                 req.timestamp = (uint)TimeUtils.GetTotalMillisecondsSince1970();
-                m_net.Send<HeartBeatReq, HeartBeatRsp>(ProtoCmd.HeartBeatReq, req, OnHeartBeatRsp,15, OnHeartBeatError);
+                //m_net.Send<HeartBeatReq, HeartBeatRsp>(ProtoCmd.HeartBeatReq, req, OnHeartBeatRsp,15, OnHeartBeatError);
+                m_net.Send<HeartBeatRsp>(ProtoCmd.HeartBeatReq, req, OnHeartBeatRsp, 15, OnHeartBeatError);
+
             }
         }
 
-        private void OnHeartBeatRsp(HeartBeatRsp rsp)
+        private void OnHeartBeatRsp(uint index, HeartBeatRsp rsp)
         {
             Debuger.Log();
             if (rsp.ret.code == 0)
